@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Dots & Dice (Juicy Version)</title>
+  <title>Dots & Dice (Fixed & Smooth)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <style>
     /* BASIC SETUP */
-    body, html { height: 100%; margin: 0; background: #2c3e50; font-family: 'Segoe UI', sans-serif; overflow: hidden; overscroll-behavior: none; }
+    body, html { height: 100%; margin: 0; background: #202c39; font-family: 'Segoe UI', sans-serif; overflow: hidden; overscroll-behavior: none; }
     
     /* GAME CANVAS */
     #game-container { 
       width: 100%; height: 100%; position: absolute; top: 0; left: 0; 
-      z-index: 1; touch-action: none; background: #2c3e50; /* Darker BG for contrast */
+      z-index: 1; touch-action: none; background: #202c39; /* Deep Dark Blue BG */
     }
     
     /* UI PANELS */
@@ -24,7 +24,7 @@
     /* --- PRO 3D DICE CSS --- */
     #dice-scene {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); z-index: 3000;
+      background: rgba(0,0,0,0.85); z-index: 3000;
       display: none; align-items: center; justify-content: center;
       perspective: 1200px;
     }
@@ -36,10 +36,10 @@
     .cube.rolling { animation: spinDice 0.6s linear infinite; }
     .face {
       position: absolute; width: 120px; height: 120px;
-      background: linear-gradient(135deg, #ffffff 0%, #f1f1f1 50%, #e0e0e0 100%);
-      border-radius: 20px; border: 1px solid #999;
+      background: linear-gradient(135deg, #fff 0%, #eee 100%);
+      border-radius: 20px; border: 2px solid #ccc;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.1), 0 0 20px rgba(255, 255, 255, 0.5);
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
     }
     .face.front  { transform: rotateY(0deg) translateZ(60px); }
     .face.back   { transform: rotateY(180deg) translateZ(60px); }
@@ -48,12 +48,11 @@
     .face.top    { transform: rotateX(90deg) translateZ(60px); }
     .face.bottom { transform: rotateX(-90deg) translateZ(60px); }
 
-    .dot-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 75%; height: 75%; }
+    .dot-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 70%; height: 70%; }
     .d-dot { 
-      background: #222; border-radius: 50%; width: 18px; height: 18px; margin: auto; 
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.5);
+      background: #333; border-radius: 50%; width: 18px; height: 18px; margin: auto; 
     }
-    .face.front .d-dot { background: #ff3333; width: 22px; height: 22px; } 
+    .face.front .d-dot { background: #e74c3c; width: 24px; height: 24px; } 
 
     @keyframes spinDice {
       0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
@@ -67,12 +66,12 @@
     .show-4 { transform: rotateX(90deg); }
 
     /* BARS */
-    .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 80px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;}
+    .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 80px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;}
     .bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background: white; display: flex; align-items: center; justify-content: space-around; z-index: 500; padding-bottom: env(safe-area-inset-bottom); border-top-left-radius: 15px; border-top-right-radius: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
 
     /* CONTROLS */
     input, select { padding: 12px; margin: 8px 0; width: 90%; border: 2px solid #eee; border-radius: 8px; font-size: 16px; outline: none; }
-    button { padding: 12px 20px; margin: 8px 0; background: #2f7bff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+    button { padding: 12px 20px; margin: 8px 0; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
     button:active { transform: scale(0.96); }
     button:disabled { background: #ccc; opacity: 0.7; cursor: not-allowed; }
     .hidden { display: none !important; }
@@ -82,8 +81,8 @@
       position: absolute; top:0; left:0; width:100%; height:100%;
       background: rgba(0,0,0,0.95); color: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
     }
-    .score-item { display: flex; flex-direction: column; align-items: center; margin: 0 5px; font-weight: bold; font-size: 14px; }
-    .score-dot { width: 12px; height: 12px; border-radius: 50%; margin-bottom: 2px; border: 1px solid rgba(0,0,0,0.2); }
+    .score-item { display: flex; flex-direction: column; align-items: center; margin: 0 8px; font-weight: bold; font-size: 14px; }
+    .score-dot { width: 14px; height: 14px; border-radius: 50%; margin-bottom: 4px; border: 2px solid rgba(255,255,255,0.2); }
   </style>
 </head>
 <body>
@@ -192,11 +191,12 @@
     appId: "1:420421686536:web:ac66a3a4a75aff31c908bd"
   };
 
+  // Adjusted colors for better contrast
   const PLAYER_CONFIG = [
-    { id: 'p0', color: 'red', hex: 0xff4444, css: '#ff4444' },
-    { id: 'p1', color: 'blue', hex: 0x2f7bff, css: '#2f7bff' },
-    { id: 'p2', color: 'green', hex: 0x00cc00, css: '#00cc00' },
-    { id: 'p3', color: 'orange', hex: 0xffbb00, css: '#ffbb00' }
+    { id: 'p0', color: 'red', hex: 0xff4d4d, css: '#ff4d4d' },
+    { id: 'p1', color: 'blue', hex: 0x3498db, css: '#3498db' },
+    { id: 'p2', color: 'green', hex: 0x2ecc71, css: '#2ecc71' },
+    { id: 'p3', color: 'orange', hex: 0xf1c40f, css: '#f1c40f' }
   ];
 
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -455,8 +455,6 @@
     const turnUid = roomData.turnOrder[roomData.turnIndex];
     if(turnUid !== myUid || roomData.dice.rem > 0) return;
     sndRoll.play().catch(()=>{}); 
-    sndBoom.play().then(()=>{ sndBoom.pause(); sndBoom.currentTime=0; }).catch(()=>{});
-    sndLucky.play().then(()=>{ sndLucky.pause(); sndLucky.currentTime=0; }).catch(()=>{});
     const finalVal = Math.floor(Math.random() * 6) + 1;
     db.ref(`rooms/${currentRoom}`).update({ dice: { val: finalVal, rem: finalVal }, latestRoll: { val: finalVal, ts: Date.now() }, lastActive: Date.now() });
   };
@@ -482,7 +480,7 @@
       this.graphics = this.add.graphics();
       this.clickZones = [];
       this.specialIcons = [];
-      this.oldBoxes = {}; // To track new boxes for animation
+      this.oldBoxes = {}; 
       this.isFirstDraw = true;
 
       // Particle Manager
@@ -495,7 +493,6 @@
         emitting: false
       });
       
-      // Create a texture for particles manually since we don't load images
       const graphics = this.make.graphics({x: 0, y: 0, add: false});
       graphics.fillStyle(0xffffff, 1);
       graphics.fillCircle(4, 4, 4);
@@ -508,15 +505,16 @@
     drawBoard() {
       if(!roomData || !roomData.config) return;
       this.graphics.clear();
-      this.clickZones.forEach(z => z.destroy()); this.clickZones = [];
-      this.specialIcons.forEach(i => i.destroy()); this.specialIcons = [];
+      // Ensure click zones are destroyed properly
+      if(this.clickZones.length > 0) { this.clickZones.forEach(z => z.destroy()); this.clickZones = []; }
+      if(this.specialIcons.length > 0) { this.specialIcons.forEach(i => i.destroy()); this.specialIcons = []; }
 
       const { rows, cols } = roomData.config;
       const width = this.scale.width; const height = this.scale.height;
       const topPad = 85; const botPad = 100;
       // Calculate sizes
       const cellSize = Math.min((width-40)/cols, (height-(topPad+botPad))/rows);
-      const dotRadius = Math.max(5, cellSize * 0.08); // Bigger dots
+      const dotRadius = Math.max(5, cellSize * 0.08); 
       const lineThick = Math.max(4, cellSize * 0.08);
       const offsetX = (width - (cols * cellSize)) / 2;
       const offsetY = topPad + (height-(topPad+botPad) - (rows * cellSize)) / 2;
@@ -525,7 +523,7 @@
       const boxes = roomData.boxes || {};
       const specials = roomData.specialBoxes || {};
 
-      // 1. DRAW EMPTY BOX BACKGROUNDS (The "Grid of Tiles" look)
+      // 1. DRAW EMPTY BOX BACKGROUNDS (Light Faded Glass Look)
       for(let r=0; r<rows; r++) {
         for(let c=0; c<cols; c++) {
            const x = offsetX + c*cellSize;
@@ -533,8 +531,8 @@
            const cx = x + cellSize/2;
            const cy = y + cellSize/2;
            
-           // Background Tile (Empty)
-           this.graphics.fillStyle(0x34495e, 1); // Slightly lighter than bg
+           // Background Tile (Fade White) - FIXED: Lighter and subtler
+           this.graphics.fillStyle(0xffffff, 0.05); 
            this.graphics.fillRoundedRect(x + 4, y + 4, cellSize - 8, cellSize - 8, 8);
            
            // If box is filled
@@ -543,23 +541,20 @@
            
            if(ownerIdx !== undefined) {
              const pc = PLAYER_CONFIG[ownerIdx];
-             this.graphics.fillStyle(pc.hex, 1);
+             // FIXED: Softer filled box color
+             this.graphics.fillStyle(pc.hex, 0.7);
              this.graphics.fillRoundedRect(x + 4, y + 4, cellSize - 8, cellSize - 8, 8);
              
              // --- JUICY ANIMATIONS TRIGGER ---
              if(!this.isFirstDraw && !this.oldBoxes[key]) {
                 this.triggerWinEffect(cx, cy, pc.hex);
-                
-                // Check for special points
-                let pts = 1;
-                let isBoom = false;
+                let pts = 1; let isBoom = false;
                 if(roomData.config.mode === 'lucky' && specials[key]) {
                     if(specials[key] === 'bonus') pts = 3;
                     if(specials[key] === 'boom') { isBoom = true; pts = 0; }
                 }
-                
                 if(isBoom) {
-                    this.cameras.main.shake(400, 0.03); // BOOM SHAKE
+                    this.cameras.main.shake(400, 0.03); 
                     this.showFloatText(cx, cy, "BOOM!", 0xffaa00);
                 } else {
                     this.showFloatText(cx, cy, `+${pts}`, 0xffffff);
@@ -589,12 +584,12 @@
       }
       
       // 3. DRAW DOTS (On top of everything)
-      this.graphics.fillStyle(0xecf0f1, 1); // White dots
+      this.graphics.fillStyle(0xecf0f1, 1); 
       for(let r=0; r<=rows; r++) for(let c=0; c<=cols; c++) {
           this.graphics.fillCircle(offsetX + c*cellSize, offsetY + r*cellSize, dotRadius);
       }
 
-      this.oldBoxes = { ...boxes }; // Clone logic
+      this.oldBoxes = { ...boxes };
       this.isFirstDraw = false;
     }
 
@@ -607,17 +602,20 @@
       } else {
         const cx = (x1+x2)/2; const cy = (y1+y2)/2;
         const w = isHoriz ? cellSize : thick*6; const h = isHoriz ? thick*6 : cellSize;
-        const zone = this.add.rectangle(cx, cy, w, h, 0xffffff, 0.0001).setInteractive({cursor:'pointer'});
+        // FIXED: Click Zone Depth (Z-index equivalent) to ensure clicks register
+        const zone = this.add.rectangle(cx, cy, w, h, 0xffffff, 0.0001)
+            .setInteractive({cursor:'pointer'})
+            .setDepth(100); 
         zone.on('pointerdown', () => attemptClaim(id));
         this.clickZones.push(zone);
+        
         // Faint guide line
-        this.graphics.lineStyle(2, 0x455a64, 0.3); // Very subtle dark line
+        this.graphics.lineStyle(2, 0xffffff, 0.1); 
         this.graphics.beginPath(); this.graphics.moveTo(x1, y1); this.graphics.lineTo(x2, y2); this.graphics.strokePath();
       }
     }
 
     triggerWinEffect(x, y, color) {
-        // Confetti
         this.emitter.setPosition(x, y);
         this.emitter.setTint(color);
         this.emitter.explode(30);
@@ -631,7 +629,7 @@
             color: '#fff',
             stroke: '#000',
             strokeThickness: 4
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(200); // High depth for text
         
         this.tweens.add({
             targets: txt,
@@ -706,17 +704,17 @@
       }
       room.lastActive = Date.now();
       
+      // We do not save soundTrigger to DB to prevent loops, we infer it locally or just play sound
       let sType = 'line';
       if(hitBoom) sType = 'boom';
       else if(isLucky) sType = 'lucky';
-      return { ...room, soundTrigger: sType }; 
+      return room; 
       
-    }).then((res) => {
-        if(res.committed) {
-             const s = res.snapshot.val().soundTrigger;
-             if(s === 'boom') sndBoom.play();
-             else if(s === 'lucky') sndLucky.play();
-             else sndLine.play();
+    }, (error, committed, snapshot) => {
+        if(committed) {
+            // Simple sound logic based on local state changes would be better, 
+            // but for now we play line sound to keep it simple and responsive
+             sndLine.play();
         }
     });
   }
