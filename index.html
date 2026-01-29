@@ -2,62 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Dots & Dice (Fixed & Smooth)</title>
+  <title>Dots & Dice - Stable Version</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <style>
-    /* BASIC SETUP */
-    body, html { height: 100%; margin: 0; background: #202c39; font-family: 'Segoe UI', sans-serif; overflow: hidden; overscroll-behavior: none; }
+    /* UI DESIGN & FIXES */
+    body, html { height: 100%; margin: 0; background: #2c3e50; font-family: 'Segoe UI', sans-serif; overflow: hidden; touch-action: none; }
     
-    /* GAME CANVAS */
-    #game-container { 
-      width: 100%; height: 100%; position: absolute; top: 0; left: 0; 
-      z-index: 1; touch-action: none; background: #202c39; /* Deep Dark Blue BG */
-    }
+    #game-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; background: #2c3e50; }
     
-    /* UI PANELS */
     .ui-panel {
-      position: absolute; background: white; border-radius: 16px; padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 1000; text-align: center;
-      width: 85%; max-width: 350px; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      position: absolute; background: white; border-radius: 12px; padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; text-align: center;
+      width: 85%; max-width: 320px; left: 50%; top: 50%; transform: translate(-50%, -50%);
     }
 
-    /* --- PRO 3D DICE CSS --- */
+    /* 3D DICE SCENE */
     #dice-scene {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); z-index: 3000;
       display: none; align-items: center; justify-content: center;
-      perspective: 1200px;
+      perspective: 1000px;
     }
     .cube {
-      width: 120px; height: 120px; position: relative;
-      transform-style: preserve-3d; transform: translateZ(-60px);
-      transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 100px; height: 100px; position: relative;
+      transform-style: preserve-3d; transition: transform 1s ease-out;
     }
-    .cube.rolling { animation: spinDice 0.6s linear infinite; }
+    .cube.rolling { animation: spinDice 0.5s linear infinite; }
     .face {
-      position: absolute; width: 120px; height: 120px;
-      background: linear-gradient(135deg, #fff 0%, #eee 100%);
-      border-radius: 20px; border: 2px solid #ccc;
+      position: absolute; width: 100px; height: 100px;
+      background: #fdfdfd; border: 2px solid #999; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
     }
-    .face.front  { transform: rotateY(0deg) translateZ(60px); }
-    .face.back   { transform: rotateY(180deg) translateZ(60px); }
-    .face.right  { transform: rotateY(90deg) translateZ(60px); }
-    .face.left   { transform: rotateY(-90deg) translateZ(60px); }
-    .face.top    { transform: rotateX(90deg) translateZ(60px); }
-    .face.bottom { transform: rotateX(-90deg) translateZ(60px); }
-
+    .face.front  { transform: rotateY(0deg) translateZ(50px); }
+    .face.back   { transform: rotateY(180deg) translateZ(50px); }
+    .face.right  { transform: rotateY(90deg) translateZ(50px); }
+    .face.left   { transform: rotateY(-90deg) translateZ(50px); }
+    .face.top    { transform: rotateX(90deg) translateZ(50px); }
+    .face.bottom { transform: rotateX(-90deg) translateZ(50px); }
     .dot-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 70%; height: 70%; }
-    .d-dot { 
-      background: #333; border-radius: 50%; width: 18px; height: 18px; margin: auto; 
-    }
-    .face.front .d-dot { background: #e74c3c; width: 24px; height: 24px; } 
+    .d-dot { background: #333; border-radius: 50%; width: 14px; height: 14px; margin: auto; }
 
-    @keyframes spinDice {
-      0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-      100% { transform: rotateX(720deg) rotateY(360deg) rotateZ(360deg); }
-    }
+    @keyframes spinDice { 0% { transform: rotateX(0deg); } 100% { transform: rotateX(360deg) rotateY(360deg); } }
     .show-1 { transform: rotateX(0deg) rotateY(0deg); }
     .show-6 { transform: rotateX(180deg) rotateY(0deg); }
     .show-2 { transform: rotateY(-90deg); }
@@ -65,112 +51,77 @@
     .show-3 { transform: rotateX(-90deg); }
     .show-4 { transform: rotateX(90deg); }
 
-    /* BARS */
-    .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 80px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border-bottom-left-radius: 15px; border-bottom-right-radius: 15px;}
-    .bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background: white; display: flex; align-items: center; justify-content: space-around; z-index: 500; padding-bottom: env(safe-area-inset-bottom); border-top-left-radius: 15px; border-top-right-radius: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-
     /* CONTROLS */
-    input, select { padding: 12px; margin: 8px 0; width: 90%; border: 2px solid #eee; border-radius: 8px; font-size: 16px; outline: none; }
-    button { padding: 12px 20px; margin: 8px 0; background: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
-    button:active { transform: scale(0.96); }
-    button:disabled { background: #ccc; opacity: 0.7; cursor: not-allowed; }
+    .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 70px; background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 500; border-bottom: 2px solid #ddd; }
+    .bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: white; display: flex; align-items: center; justify-content: space-around; z-index: 500; border-top: 2px solid #ddd; padding-bottom: env(safe-area-inset-bottom); }
+
+    input, select { padding: 10px; margin: 8px 0; width: 90%; border: 1px solid #ccc; border-radius: 6px; }
+    button { padding: 12px; margin-top: 5px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; width: 100%; }
+    button:disabled { background: #bdc3c7; }
     .hidden { display: none !important; }
     
-    /* OVERLAYS */
-    #waitingOverlay, #gameOverOverlay {
-      position: absolute; top:0; left:0; width:100%; height:100%;
-      background: rgba(0,0,0,0.95); color: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-    }
-    .score-item { display: flex; flex-direction: column; align-items: center; margin: 0 8px; font-weight: bold; font-size: 14px; }
-    .score-dot { width: 14px; height: 14px; border-radius: 50%; margin-bottom: 4px; border: 2px solid rgba(255,255,255,0.2); }
+    #waitingOverlay, #gameOverOverlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); color: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .score-badge { display: flex; flex-direction: column; align-items: center; margin-left: 10px; font-size: 14px; font-weight: bold; }
+    .p-dot { width: 10px; height: 10px; border-radius: 50%; margin-bottom: 3px; border: 1px solid white; }
   </style>
 </head>
 <body>
 
-  <div id="dice-scene">
-    <div class="cube" id="diceCube">
-      <div class="face front"><div class="dot-grid"><div style="grid-area:2/2" class="d-dot"></div></div></div>
-      <div class="face back"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:2/1" class="d-dot"></div><div style="grid-area:2/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-      <div class="face right"><div class="dot-grid"><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div></div></div>
-      <div class="face left"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:2/2" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-      <div class="face top"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:2/2" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-      <div class="face bottom"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-    </div>
-  </div>
-  
+  <div id="dice-scene"><div class="cube" id="diceCube">
+    <div class="face front"><div class="dot-grid"><div style="grid-area:2/2" class="d-dot"></div></div></div>
+    <div class="face back"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:2/1" class="d-dot"></div><div style="grid-area:2/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
+    <div class="face right"><div class="dot-grid"><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div></div></div>
+    <div class="face left"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:2/2" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
+    <div class="face top"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:2/2" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
+    <div class="face bottom"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
+  </div></div>
+
   <div id="game-container"></div>
 
   <div id="waitingOverlay" class="hidden">
-    <h2>Room Ready!</h2>
-    <p>Room Code:</p>
-    <h1 id="shareCode" style="font-size: 50px; color: #4eff4e; margin: 5px 0;">---</h1>
+    <h2>Room Ready</h2>
+    <h1 id="shareCode" style="color:#2ecc71; font-size:40px; margin:10px;">---</h1>
     <p id="waitText">Waiting for players...</p>
-    <div id="playerListDisplay" style="margin: 10px 0; color: #aaa; font-size: 14px;"></div>
-    <button id="cancelWaitBtn" style="width: auto; background: #555; margin-top: 20px;">Exit Room</button>
+    <button id="cancelWaitBtn" style="width: auto; background: #555;">Exit</button>
   </div>
 
   <div id="gameOverOverlay" class="hidden">
-    <h1 style="color: #ffd700; font-size: 40px; margin-bottom: 10px;">GAME OVER</h1>
-    <h2 id="winnerText">Winner: ---</h2>
-    <div id="finalScores" style="margin: 20px 0; font-size: 18px; line-height: 1.6;"></div>
-    <button id="playAgainBtn" style="width: 200px; background: #28a745; display: none;">PLAY AGAIN</button>
-    <button id="leaveGameBtn" style="width: 200px; background: #dc3545; margin-top: 10px;">LEAVE ROOM</button>
-    <p id="hostMsg" style="font-size: 12px; color: #aaa; margin-top: 10px;">(Only Host can restart)</p>
+    <h1 style="color: gold;">GAME OVER</h1>
+    <h2 id="winnerText">---</h2>
+    <div id="finalScores" style="margin:20px 0; font-size:18px;"></div>
+    <button id="restartBtn" style="width: 150px; background: #27ae60;">PLAY AGAIN</button>
+    <button id="leaveGameBtn" style="width: 150px; background: #c0392b; margin-top:10px;">LEAVE</button>
   </div>
 
   <div id="lobbyUI" class="ui-panel">
-    <h2 style="color:#2f7bff; margin-top:0;">Dots & Dice</h2>
-    <input id="displayName" placeholder="Enter Nickname" maxlength="10" />
-    <input id="roomInput" placeholder="Room Code (e.g. 1001)" maxlength="6" style="text-align: center; font-weight: bold; letter-spacing: 2px;"/>
+    <h2 style="color:#2c3e50; margin:0 0 10px 0;">Dots & Dice</h2>
+    <input id="displayName" placeholder="Your Name" maxlength="12" />
+    <input id="roomInput" placeholder="Room Code (e.g. 1234)" style="text-align:center; font-weight:bold; letter-spacing:1px;" />
     
-    <div style="margin: 10px 0; text-align: left; padding: 0 5%;">
-      <label style="font-size: 12px; color: #666; font-weight:bold;">GAME MODE:</label>
-      <select id="gameMode">
-        <option value="classic">Classic (Normal)</option>
-        <option value="lucky" selected>Lucky Mode (Mystery)</option>
-      </select>
+    <div style="display:flex; gap:5px;">
+      <select id="gridSize"><option value="4">4x4 Grid</option><option value="5">5x5 Grid</option><option value="6">6x6 Grid</option></select>
+      <select id="maxPlayers"><option value="2">2 Players</option><option value="3">3 Players</option><option value="4">4 Players</option></select>
     </div>
-
-    <div style="margin: 10px 0; text-align: left; padding: 0 5%;">
-      <label style="font-size: 12px; color: #666; font-weight:bold;">PLAYERS:</label>
-      <select id="maxPlayers">
-        <option value="2" selected>2 Players</option>
-        <option value="3">3 Players</option>
-        <option value="4">4 Players</option>
-      </select>
-    </div>
-
-    <div style="margin: 10px 0; text-align: left; padding: 0 5%;">
-      <label style="font-size: 12px; color: #666; font-weight:bold;">GRID SIZE:</label>
-      <select id="gridSize">
-        <option value="3">3 x 3 (Small)</option>
-        <option value="4" selected>4 x 4 (Classic)</option>
-        <option value="5">5 x 5 (Medium)</option>
-        <option value="auto">Auto (Screen Fit)</option>
-      </select>
-    </div>
-
+    <select id="gameMode"><option value="lucky">Lucky Mode (Bombs)</option><option value="classic">Classic Mode</option></select>
+    
     <button id="createRoomBtn">CREATE ROOM</button>
-    <div style="margin: 10px 0; color: #aaa; font-size: 12px;">— OR —</div>
-    <button id="joinRoomBtn" style="background: #28a745;">JOIN ROOM</button>
+    <button id="joinRoomBtn" style="background: #27ae60;">JOIN ROOM</button>
   </div>
 
   <div id="gameUI_Top" class="top-bar hidden">
-    <div style="min-width: 50px;">
+    <div>
       <div style="font-size:10px; color:#888;">ROOM</div>
-      <div id="roomLabel" style="font-weight:bold; font-size:16px;">---</div>
+      <div id="roomLabel" style="font-weight:bold;">---</div>
     </div>
-    <div style="flex-grow: 1; text-align: center; margin: 0 10px;">
-        <span id="turnLabel" style="padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight:bold; background:#eee; display: inline-block; white-space: nowrap;">Connecting...</span>
-    </div>
-    <div id="scoreContainer" style="display:flex; gap:8px;"></div>
+    <div id="turnLabel" style="padding:5px 15px; border-radius:20px; font-weight:bold; font-size:14px; background:#ecf0f1;">Wait...</div>
+    <div id="scoreContainer" style="display:flex;"></div>
   </div>
 
   <div id="gameUI_Bottom" class="bottom-bar hidden">
-    <button id="rollBtn" style="width: 60%; height: 50px; font-size: 18px;">ROLL DICE</button>
-    <div style="text-align:center; margin-left: 10px;">
-       <div style="font-size:10px; color:#666; font-weight:bold;">LINES</div>
-       <b id="linesLeft" style="font-size:24px; color:#333;">0</b>
+    <button id="rollBtn" style="width: 60%; height:50px; font-size:18px;">ROLL DICE</button>
+    <div style="text-align:center; width:30%;">
+       <div style="font-size:10px; font-weight:bold; color:#7f8c8d;">MOVES LEFT</div>
+       <b id="linesLeft" style="font-size:24px; color:#2c3e50;">0</b>
     </div>
   </div>
 
@@ -180,7 +131,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <script>
-  // CONFIG
+  // FIREBASE CONFIG (Use your own if needed)
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyCwy91uqMBAM_kXfxd8bE6LsVOXdNL54i8",
     authDomain: "dotgame-4a8df.firebaseapp.com",
@@ -191,532 +142,357 @@
     appId: "1:420421686536:web:ac66a3a4a75aff31c908bd"
   };
 
-  // Adjusted colors for better contrast
-  const PLAYER_CONFIG = [
-    { id: 'p0', color: 'red', hex: 0xff4d4d, css: '#ff4d4d' },
-    { id: 'p1', color: 'blue', hex: 0x3498db, css: '#3498db' },
-    { id: 'p2', color: 'green', hex: 0x2ecc71, css: '#2ecc71' },
-    { id: 'p3', color: 'orange', hex: 0xf1c40f, css: '#f1c40f' }
+  const COLORS = [
+    { hex: 0xe74c3c, css: '#e74c3c' }, // Red
+    { hex: 0x3498db, css: '#3498db' }, // Blue
+    { hex: 0x2ecc71, css: '#2ecc71' }, // Green
+    { hex: 0xf1c40f, css: '#f1c40f' }  // Yellow
   ];
 
   firebase.initializeApp(FIREBASE_CONFIG);
   const db = firebase.database();
   const auth = firebase.auth();
-  let myUid = null;
-  const savedName = localStorage.getItem('dotsDiceName');
-  if(savedName) document.getElementById('displayName').value = savedName;
+  let myUid, currentRoom, roomData, game;
+  let lastRollTime = 0;
+  let isRolling = false;
 
-  auth.signInAnonymously().then(u => { myUid = u.user.uid; }).catch(e => alert("Net Error"));
+  auth.signInAnonymously().then(u => myUid = u.user.uid);
 
-  // SOUNDS
-  const sndRoll = new Audio('https://cdn.discordapp.com/attachments/1420003318096461825/1459851313398546472/dice-roll-sound.mp3?ex=6977e5bb&is=6976943b&hm=d2563b186124971b775524a0558746d877e9bb2bf20eab3804b89f03a2dde8af&');
-  const sndLine = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
-  const sndBoom = new Audio('https://cdn.discordapp.com/attachments/1420003318096461825/1458766850161905675/myinstants_2.mp3?ex=6977e83f&is=697696bf&hm=b9f8a9efd0791eda0dacc675a993af419f3a82804bde4e7df7770fa1cf37e64f&'); 
-  const sndLucky = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
-
-  let currentRoom = null;
-  let roomData = null;
-  let gameInstance = null;
-  let autoDeleteInterval = null;
-  let lastProcessedRoll = 0;
-  let isRollingAnim = false; 
-
-  // --- FIREBASE OPS ---
+  // --- ROOM LOGIC ---
   document.getElementById('createRoomBtn').onclick = async () => {
-    if(!myUid) return alert("Connecting...");
     const code = document.getElementById('roomInput').value.trim().toUpperCase();
-    const name = document.getElementById('displayName').value.trim() || 'Host';
-    const sizeVal = document.getElementById('gridSize').value;
-    const maxP = parseInt(document.getElementById('maxPlayers').value);
-    const mode = document.getElementById('gameMode').value;
+    const name = document.getElementById('displayName').value || 'Host';
+    if(!code) return alert("Please enter a Room Code");
     
-    if(!code) return alert("Enter Room Code");
-    localStorage.setItem('dotsDiceName', name);
+    const size = parseInt(document.getElementById('gridSize').value);
+    const mode = document.getElementById('gameMode').value;
+    const maxP = parseInt(document.getElementById('maxPlayers').value);
 
-    const snap = await db.ref('rooms/' + code).once('value');
-    if(snap.exists() && Date.now() - (snap.val().lastActive||0) < 600000) return alert("Code taken!");
-
-    let rows, cols;
-    if(sizeVal === 'auto') {
-      const safeW = window.innerWidth - 40; const safeH = window.innerHeight - 180;
-      cols = Math.min(Math.floor(safeW / 55), 10);
-      rows = Math.min(Math.floor(safeH / 55), 12);
-    } else { rows = cols = parseInt(sizeVal); }
-
-    let specialBoxes = {};
+    // Generate Special Boxes
+    let specials = {};
     if(mode === 'lucky') {
-      const allCoords = [];
-      for(let r=0; r<rows; r++) for(let c=0; c<cols; c++) allCoords.push(`${r}_${c}`);
-      for (let i = allCoords.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allCoords[i], allCoords[j]] = [allCoords[j], allCoords[i]];
-      }
-      const luckyCount = Math.floor(Math.random() * 4) + 2; 
-      const boomCount = Math.floor(Math.random() * 4) + 2; 
-      let idx = 0;
-      for(let i=0; i<luckyCount && idx < allCoords.length; i++) specialBoxes[allCoords[idx++]] = 'bonus';
-      for(let i=0; i<boomCount && idx < allCoords.length; i++) specialBoxes[allCoords[idx++]] = 'boom';
+      let cells = [];
+      for(let r=0; r<size; r++) for(let c=0; c<size; c++) cells.push(`${r}_${c}`);
+      cells.sort(() => Math.random() - 0.5);
+      // Add random bonuses/bombs
+      for(let i=0; i<Math.ceil(size*0.8); i++) specials[cells[i]] = (i%2===0)?'bonus':'boom';
     }
 
-    await db.ref('rooms/' + code).set({
-      config: { maxPlayers: maxP, rows, cols, mode },
-      players: { [myUid]: { name, colorIdx: 0, score: 0 } },
+    await db.ref('rooms/'+code).set({
+      config: { rows: size, cols: size, maxP, mode },
+      players: { [myUid]: { name, color: 0, score: 0 } },
       state: 'waiting',
-      lastActive: Date.now(),
-      turnOrder: [],
-      turnIndex: 0,
+      turnOrder: [], turnIndex: 0,
       dice: { val: 0, rem: 0 },
-      latestRoll: { val: 0, ts: 0 },
-      filledBoxes: 0,
-      totalBoxes: rows * cols,
-      edges: {}, boxes: {},
-      specialBoxes: specialBoxes
+      latestRoll: { val: 1, ts: 0 },
+      edges: {}, boxes: {}, specialBoxes: specials,
+      filledCount: 0, totalBoxes: size * size
     });
-    enterRoom(code, true);
+    enterRoom(code);
   };
 
   document.getElementById('joinRoomBtn').onclick = async () => {
-    if(!myUid) return alert("Connecting...");
     const code = document.getElementById('roomInput').value.trim().toUpperCase();
-    const name = document.getElementById('displayName').value.trim() || 'Player';
+    const name = document.getElementById('displayName').value || 'Player';
     if(!code) return alert("Enter Room Code");
-    localStorage.setItem('dotsDiceName', name);
 
-    const roomRef = db.ref('rooms/' + code);
-    const snap = await roomRef.once('value');
-    if(!snap.exists()) return alert("Room not found!");
+    const snap = await db.ref('rooms/'+code).once('value');
+    if(!snap.exists()) return alert("Room not found");
     const r = snap.val();
-
-    const pCount = Object.keys(r.players || {}).length;
-    if(r.players && !r.players[myUid] && pCount >= r.config.maxPlayers) return alert("Room is Full!");
-
-    const colorIdx = r.players[myUid] ? r.players[myUid].colorIdx : pCount;
-    await roomRef.child('players/' + myUid).update({ name, colorIdx, score: 0 });
     
-    const newSnap = await roomRef.once('value');
-    const newR = newSnap.val();
-    if(newR.state === 'waiting' && Object.keys(newR.players).length >= newR.config.maxPlayers) {
-      const pIds = Object.keys(newR.players);
-      for (let i = pIds.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pIds[i], pIds[j]] = [pIds[j], pIds[i]];
+    if(r.state === 'waiting') {
+      const pCount = Object.keys(r.players || {}).length;
+      if(pCount >= r.config.maxP) return alert("Room Full");
+      
+      await db.ref(`rooms/${code}/players/${myUid}`).set({ name, color: pCount, score: 0 });
+      
+      // Start Game if full
+      if(pCount + 1 === r.config.maxP) {
+        const pIds = Object.keys(r.players).concat(myUid).sort(() => Math.random()-0.5);
+        await db.ref(`rooms/${code}`).update({ state: 'playing', turnOrder: pIds, turnIndex: 0 });
       }
-      await roomRef.update({ state: 'playing', turnOrder: pIds, turnIndex: 0, lastActive: Date.now() });
-    } else {
-      await roomRef.update({ lastActive: Date.now() });
     }
-    enterRoom(code, false);
+    enterRoom(code);
   };
 
-  document.getElementById('cancelWaitBtn').onclick = () => location.reload();
-  document.getElementById('leaveGameBtn').onclick = () => location.reload();
-  document.getElementById('playAgainBtn').onclick = () => {
+  document.getElementById('restartBtn').onclick = () => {
     if(!currentRoom) return;
     db.ref(`rooms/${currentRoom}`).transaction(r => {
-      if(!r) return r;
-      r.state = 'playing';
-      r.edges = {}; r.boxes = {}; r.filledBoxes = 0;
-      r.dice = { val: 0, rem: 0 };
-      r.latestRoll = { val: 0, ts: 0 };
-      const pIds = Object.keys(r.players);
-      for (let i = pIds.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pIds[i], pIds[j]] = [pIds[j], pIds[i]];
-      }
-      r.turnOrder = pIds; r.turnIndex = 0;
-      Object.keys(r.players).forEach(uid => { r.players[uid].score = 0; });
-      if(r.config.mode === 'lucky') {
-        const allCoords = [];
-        for(let row=0; row<r.config.rows; row++) for(let col=0; col<r.config.cols; col++) allCoords.push(`${row}_${col}`);
-        for (let i = allCoords.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allCoords[i], allCoords[j]] = [allCoords[j], allCoords[i]];
-        }
-        r.specialBoxes = {};
-        const luckyCount = Math.floor(Math.random() * 4) + 2;
-        const boomCount = Math.floor(Math.random() * 4) + 2;
-        let idx = 0;
-        for(let i=0; i<luckyCount && idx < allCoords.length; i++) r.specialBoxes[allCoords[idx++]] = 'bonus';
-        for(let i=0; i<boomCount && idx < allCoords.length; i++) r.specialBoxes[allCoords[idx++]] = 'boom';
-      }
-      return r;
+       if(!r) return r;
+       r.state = 'playing'; r.edges = {}; r.boxes = {}; r.filledCount = 0;
+       r.dice = { val: 0, rem: 0 };
+       Object.keys(r.players).forEach(uid => r.players[uid].score = 0);
+       return r;
     });
   };
+  document.getElementById('leaveGameBtn').onclick = () => location.reload();
 
-  function enterRoom(code, isHost) {
+  function enterRoom(code) {
     currentRoom = code;
     document.getElementById('lobbyUI').classList.add('hidden');
     document.getElementById('roomLabel').innerText = code;
-    document.getElementById('waitingOverlay').classList.remove('hidden');
-    if(isHost) document.getElementById('shareCode').innerText = code;
-    else { document.getElementById('waitText').innerText = "Connecting..."; document.getElementById('shareCode').innerText = code; }
+    
+    if(!game) initPhaser();
 
-    if(isHost) autoDeleteInterval = setInterval(() => { db.ref(`rooms/${currentRoom}`).update({ lastActive: Date.now() }); }, 30000);
-
-    if(!gameInstance) initPhaser();
-
-    db.ref('rooms/' + code).on('value', snap => {
+    db.ref('rooms/'+code).on('value', snap => {
       roomData = snap.val();
-      if(!roomData) { alert("Room closed."); location.reload(); return; }
+      if(!roomData) { alert("Room closed"); location.reload(); return; }
       
-      if(roomData.latestRoll && roomData.latestRoll.ts > lastProcessedRoll) {
-        lastProcessedRoll = roomData.latestRoll.ts;
-        isRollingAnim = true;
-        trigger3DDice(roomData.latestRoll.val, () => {
-          isRollingAnim = false;
-          updateHTML_UI(); 
-        });
-        updateHTML_UI(); 
-      } else {
-        updateHTML_UI(); 
+      updateUI();
+
+      // Sync Dice Animation
+      if(roomData.latestRoll && roomData.latestRoll.ts > lastRollTime) {
+        lastRollTime = roomData.latestRoll.ts;
+        triggerDiceAnim(roomData.latestRoll.val);
       }
 
-      if(gameInstance) {
-        const scene = gameInstance.scene.getScene('GameScene');
-        if(scene) scene.drawBoard();
-      }
+      if(game) game.scene.getScene('GameScene').drawBoard();
     });
   }
 
-  function trigger3DDice(finalVal, callback) {
+  function triggerDiceAnim(val) {
+    isRolling = true; updateUI();
     const scene = document.getElementById('dice-scene');
     const cube = document.getElementById('diceCube');
     scene.style.display = 'flex';
-    sndRoll.currentTime = 0; sndRoll.play().catch(() => {});
     cube.className = 'cube rolling';
+    // Sound
+    new Audio('https://www.soundjay.com/board-games/sounds/dice-roll-1.mp3').play().catch(()=>{});
+
     setTimeout(() => {
-      cube.classList.remove('rolling');
-      void cube.offsetWidth;
-      cube.className = `cube show-${finalVal}`;
-      setTimeout(() => { scene.style.display = 'none'; if(callback) callback(); }, 1200);
-    }, 800);
+      cube.className = 'cube show-' + val;
+      setTimeout(() => {
+        scene.style.display = 'none';
+        isRolling = false; updateUI();
+      }, 1000);
+    }, 600);
   }
 
-  function updateHTML_UI() {
-    const players = roomData.players || {};
-    const waitOverlay = document.getElementById('waitingOverlay');
-    if(roomData.state === 'waiting') {
-      waitOverlay.classList.remove('hidden');
-      document.getElementById('waitText').innerText = `Waiting: ${Object.keys(players).length} / ${roomData.config.maxPlayers} Players`;
-      document.getElementById('playerListDisplay').innerHTML = Object.values(players).map(p => `<span style="color:${PLAYER_CONFIG[p.colorIdx].css}">${p.name}</span>`).join(', ');
-    } else {
-      waitOverlay.classList.add('hidden');
-      document.getElementById('gameUI_Top').classList.remove('hidden');
-      document.getElementById('gameUI_Bottom').classList.remove('hidden');
+  function updateUI() {
+    const r = roomData;
+    const isMe = r.turnOrder && r.turnOrder[r.turnIndex] === myUid;
+    
+    // Screens
+    document.getElementById('waitingOverlay').classList.toggle('hidden', r.state !== 'waiting');
+    document.getElementById('gameOverOverlay').classList.toggle('hidden', r.state !== 'finished');
+    document.getElementById('gameUI_Top').classList.toggle('hidden', r.state === 'waiting');
+    document.getElementById('gameUI_Bottom').classList.toggle('hidden', r.state === 'waiting');
+    document.getElementById('shareCode').innerText = currentRoom;
+    document.getElementById('waitText').innerText = `Players: ${Object.keys(r.players).length} / ${r.config.maxP}`;
+
+    // Game Over
+    if(r.state === 'finished') {
+      let winner = { name: '', s: -1 };
+      let html = '';
+      Object.values(r.players).forEach(p => {
+        if(p.score > winner.s) winner = { name: p.name, s: p.score, c: p.color };
+        html += `<div style="color:${COLORS[p.color].css}">${p.name}: ${p.score}</div>`;
+      });
+      document.getElementById('winnerText').innerText = `Winner: ${winner.name}`;
+      document.getElementById('winnerText').style.color = COLORS[winner.c].css;
+      document.getElementById('finalScores').innerHTML = html;
     }
 
-    if(roomData.state === 'finished') {
-      document.getElementById('gameOverOverlay').classList.remove('hidden');
-      document.getElementById('gameUI_Bottom').classList.add('hidden');
-      let maxScore = -999; let winners = [];
-      Object.values(players).forEach(p => { if(p.score > maxScore) { maxScore = p.score; winners = [p]; } else if(p.score === maxScore) { winners.push(p); } });
-      const wEl = document.getElementById('winnerText');
-      wEl.innerText = `Winner: ${winners.map(p => p.name).join(' & ')}`;
-      wEl.style.color = PLAYER_CONFIG[winners[0].colorIdx].css;
-      let html = "";
-      Object.values(players).forEach(p => { html += `<div style="color:${PLAYER_CONFIG[p.colorIdx].css}">${p.name}: ${p.score}</div>`; });
-      document.getElementById('finalScores').innerHTML = html;
-      const isHost = (roomData.turnOrder && roomData.turnOrder[0] === myUid);
-      document.getElementById('playAgainBtn').style.display = isHost ? 'inline-block' : 'none';
-      document.getElementById('hostMsg').style.display = isHost ? 'none' : 'block';
-    } else { document.getElementById('gameOverOverlay').classList.add('hidden'); }
-
-    const scoreCont = document.getElementById('scoreContainer');
-    scoreCont.innerHTML = '';
-    Object.values(players).forEach(p => {
-      scoreCont.innerHTML += `<div class="score-item" style="color:${PLAYER_CONFIG[p.colorIdx].css}"><div class="score-dot" style="background:${PLAYER_CONFIG[p.colorIdx].css}"></div><span>${p.score}</span></div>`;
+    // Top Bar Scores
+    const sc = document.getElementById('scoreContainer');
+    sc.innerHTML = '';
+    if(r.players) Object.values(r.players).forEach(p => {
+      sc.innerHTML += `<div class="score-badge" style="color:${COLORS[p.color].css}">
+        <div class="p-dot" style="background:${COLORS[p.color].css}"></div>${p.score}
+      </div>`;
     });
-    
-    const linesEl = document.getElementById('linesLeft');
-    linesEl.innerText = isRollingAnim ? "..." : roomData.dice.rem;
 
-    if(roomData.state === 'playing') {
-      const turnUid = roomData.turnOrder[roomData.turnIndex];
-      const isMe = (turnUid === myUid);
-      const turnLabel = document.getElementById('turnLabel');
-      const rollBtn = document.getElementById('rollBtn');
-      if(isMe) {
-        turnLabel.innerText = "YOUR TURN"; turnLabel.style.background = PLAYER_CONFIG[players[turnUid].colorIdx].css; turnLabel.style.color = "white";
-        if(roomData.dice.rem > 0 || isRollingAnim) { 
-            rollBtn.innerText = isRollingAnim ? "ROLLING..." : "DRAW LINES"; 
-            rollBtn.disabled = true; rollBtn.style.opacity = isRollingAnim ? "0.5" : "1"; 
-        } else { 
-            rollBtn.innerText = "ROLL DICE"; rollBtn.disabled = false; 
-        }
+    // Bottom Bar
+    const turnLbl = document.getElementById('turnLabel');
+    const rollBtn = document.getElementById('rollBtn');
+    
+    if(r.state === 'playing') {
+      const pTurn = r.players[r.turnOrder[r.turnIndex]];
+      turnLbl.innerText = isMe ? "YOUR TURN" : `${pTurn.name}'s Turn`;
+      turnLbl.style.background = isMe ? COLORS[pTurn.color].css : '#ecf0f1';
+      turnLbl.style.color = isMe ? 'white' : 'black';
+      
+      document.getElementById('linesLeft').innerText = isRolling ? "..." : r.dice.rem;
+      
+      if(isMe && r.dice.rem === 0 && !isRolling) {
+        rollBtn.disabled = false; rollBtn.innerText = "ROLL DICE";
       } else {
-        turnLabel.innerText = `${players[turnUid].name}'s Turn`; turnLabel.style.background = "white"; turnLabel.style.color = PLAYER_CONFIG[players[turnUid].colorIdx].css; turnLabel.style.border = `2px solid ${PLAYER_CONFIG[players[turnUid].colorIdx].css}`;
-        rollBtn.innerText = "WAITING..."; rollBtn.disabled = true;
+        rollBtn.disabled = true; rollBtn.innerText = isRolling ? "ROLLING..." : (isMe ? "DRAW LINES" : "WAITING...");
       }
     }
   }
 
   document.getElementById('rollBtn').onclick = () => {
-    if(!roomData || roomData.state !== 'playing') return;
-    const turnUid = roomData.turnOrder[roomData.turnIndex];
-    if(turnUid !== myUid || roomData.dice.rem > 0) return;
-    sndRoll.play().catch(()=>{}); 
-    const finalVal = Math.floor(Math.random() * 6) + 1;
-    db.ref(`rooms/${currentRoom}`).update({ dice: { val: finalVal, rem: finalVal }, latestRoll: { val: finalVal, ts: Date.now() }, lastActive: Date.now() });
+    const val = Math.floor(Math.random() * 6) + 1;
+    db.ref(`rooms/${currentRoom}`).update({
+      dice: { val, rem: val },
+      latestRoll: { val, ts: Date.now() }
+    });
   };
 
-  // --- PHASER GAME (THE VISUALS) ---
+  // --- PHASER GRAPHICS ---
   function initPhaser() {
-    const config = {
-      type: Phaser.AUTO,
-      parent: 'game-container',
-      width: window.innerWidth,
-      height: window.innerHeight,
-      transparent: true,
-      scale: { mode: Phaser.Scale.RESIZE },
-      scene: GameScene
-    };
-    gameInstance = new Phaser.Game(config);
+    game = new Phaser.Game({
+      type: Phaser.AUTO, parent: 'game-container',
+      width: window.innerWidth, height: window.innerHeight,
+      transparent: true, scene: GameScene,
+      scale: { mode: Phaser.Scale.RESIZE }
+    });
   }
 
   class GameScene extends Phaser.Scene {
-    constructor() { super('GameScene'); }
+    create() { this.graphics = this.add.graphics(); this.drawBoard(); }
     
-    create() {
-      this.graphics = this.add.graphics();
-      this.clickZones = [];
-      this.specialIcons = [];
-      this.oldBoxes = {}; 
-      this.isFirstDraw = true;
-
-      // Particle Manager
-      this.emitter = this.add.particles(0, 0, 'flare', {
-        speed: { min: 50, max: 200 },
-        scale: { start: 0.5, end: 0 },
-        blendMode: 'ADD',
-        lifespan: 800,
-        gravityY: 200,
-        emitting: false
-      });
-      
-      const graphics = this.make.graphics({x: 0, y: 0, add: false});
-      graphics.fillStyle(0xffffff, 1);
-      graphics.fillCircle(4, 4, 4);
-      graphics.generateTexture('flare', 8, 8);
-
-      this.scale.on('resize', this.drawBoard, this);
-      this.time.delayedCall(100, () => this.drawBoard());
-    }
-
     drawBoard() {
       if(!roomData || !roomData.config) return;
       this.graphics.clear();
-      // Ensure click zones are destroyed properly
-      if(this.clickZones.length > 0) { this.clickZones.forEach(z => z.destroy()); this.clickZones = []; }
-      if(this.specialIcons.length > 0) { this.specialIcons.forEach(i => i.destroy()); this.specialIcons = []; }
+      // Safe cleanup of old zones if needed (Phaser handles click zones well usually)
+      this.children.list.forEach(c => { if(c.type === 'Rectangle') c.destroy(); });
 
       const { rows, cols } = roomData.config;
-      const width = this.scale.width; const height = this.scale.height;
-      const topPad = 85; const botPad = 100;
-      // Calculate sizes
-      const cellSize = Math.min((width-40)/cols, (height-(topPad+botPad))/rows);
-      const dotRadius = Math.max(5, cellSize * 0.08); 
-      const lineThick = Math.max(4, cellSize * 0.08);
-      const offsetX = (width - (cols * cellSize)) / 2;
-      const offsetY = topPad + (height-(topPad+botPad) - (rows * cellSize)) / 2;
+      const padTop = 80; const padBot = 90;
+      const w = this.scale.width; const h = this.scale.height;
+      
+      // Calculate perfect square size
+      const size = Math.min((w - 40) / cols, (h - padTop - padBot) / rows);
+      const offX = (w - (cols * size)) / 2;
+      const offY = padTop + ((h - padTop - padBot) - (rows * size)) / 2;
 
-      const edges = roomData.edges || {};
       const boxes = roomData.boxes || {};
-      const specials = roomData.specialBoxes || {};
+      const edges = roomData.edges || {};
+      const specs = roomData.specialBoxes || {};
 
-      // 1. DRAW EMPTY BOX BACKGROUNDS (Light Faded Glass Look)
+      // Draw Grid & Boxes
       for(let r=0; r<rows; r++) {
         for(let c=0; c<cols; c++) {
-           const x = offsetX + c*cellSize;
-           const y = offsetY + r*cellSize;
-           const cx = x + cellSize/2;
-           const cy = y + cellSize/2;
-           
-           // Background Tile (Fade White) - FIXED: Lighter and subtler
-           this.graphics.fillStyle(0xffffff, 0.05); 
-           this.graphics.fillRoundedRect(x + 4, y + 4, cellSize - 8, cellSize - 8, 8);
-           
-           // If box is filled
-           const key = `${r}_${c}`;
-           const ownerIdx = boxes[key];
-           
-           if(ownerIdx !== undefined) {
-             const pc = PLAYER_CONFIG[ownerIdx];
-             // FIXED: Softer filled box color
-             this.graphics.fillStyle(pc.hex, 0.7);
-             this.graphics.fillRoundedRect(x + 4, y + 4, cellSize - 8, cellSize - 8, 8);
-             
-             // --- JUICY ANIMATIONS TRIGGER ---
-             if(!this.isFirstDraw && !this.oldBoxes[key]) {
-                this.triggerWinEffect(cx, cy, pc.hex);
-                let pts = 1; let isBoom = false;
-                if(roomData.config.mode === 'lucky' && specials[key]) {
-                    if(specials[key] === 'bonus') pts = 3;
-                    if(specials[key] === 'boom') { isBoom = true; pts = 0; }
-                }
-                if(isBoom) {
-                    this.cameras.main.shake(400, 0.03); 
-                    this.showFloatText(cx, cy, "BOOM!", 0xffaa00);
-                } else {
-                    this.showFloatText(cx, cy, `+${pts}`, 0xffffff);
-                }
-             }
+          const x = offX + c*size; const y = offY + r*size;
+          const key = `${r}_${c}`;
 
-             // Draw Icon
-             if(roomData.config.mode === 'lucky' && specials[key]) {
-                let icon = '';
-                if(specials[key] === 'bonus') icon = '⭐';
-                if(specials[key] === 'boom') icon = '💣';
-                const txt = this.add.text(cx, cy, icon, { fontSize: `${cellSize/2}px` }).setOrigin(0.5);
-                this.specialIcons.push(txt);
-             } 
-           }
-        }
-      }
-
-      // 2. DRAW LINES
-      for(let r=0; r<=rows; r++) for(let c=0; c<cols; c++) {
-        const id = `h_${r}_${c}`; const x = offsetX + c*cellSize; const y = offsetY + r*cellSize;
-        this.drawEdge(id, x, y, x+cellSize, y, lineThick, true, cellSize);
-      }
-      for(let r=0; r<rows; r++) for(let c=0; c<=cols; c++) {
-        const id = `v_${r}_${c}`; const x = offsetX + c*cellSize; const y = offsetY + r*cellSize;
-        this.drawEdge(id, x, y, x, y+cellSize, lineThick, false, cellSize);
-      }
-      
-      // 3. DRAW DOTS (On top of everything)
-      this.graphics.fillStyle(0xecf0f1, 1); 
-      for(let r=0; r<=rows; r++) for(let c=0; c<=cols; c++) {
-          this.graphics.fillCircle(offsetX + c*cellSize, offsetY + r*cellSize, dotRadius);
-      }
-
-      this.oldBoxes = { ...boxes };
-      this.isFirstDraw = false;
-    }
-
-    drawEdge(id, x1, y1, x2, y2, thick, isHoriz, cellSize) {
-      const taken = roomData.edges && roomData.edges[id];
-      if(taken) {
-        const pc = PLAYER_CONFIG[taken.cIdx];
-        this.graphics.lineStyle(thick, pc.hex, 1);
-        this.graphics.beginPath(); this.graphics.moveTo(x1, y1); this.graphics.lineTo(x2, y2); this.graphics.strokePath();
-      } else {
-        const cx = (x1+x2)/2; const cy = (y1+y2)/2;
-        const w = isHoriz ? cellSize : thick*6; const h = isHoriz ? thick*6 : cellSize;
-        // FIXED: Click Zone Depth (Z-index equivalent) to ensure clicks register
-        const zone = this.add.rectangle(cx, cy, w, h, 0xffffff, 0.0001)
-            .setInteractive({cursor:'pointer'})
-            .setDepth(100); 
-        zone.on('pointerdown', () => attemptClaim(id));
-        this.clickZones.push(zone);
-        
-        // Faint guide line
-        this.graphics.lineStyle(2, 0xffffff, 0.1); 
-        this.graphics.beginPath(); this.graphics.moveTo(x1, y1); this.graphics.lineTo(x2, y2); this.graphics.strokePath();
-      }
-    }
-
-    triggerWinEffect(x, y, color) {
-        this.emitter.setPosition(x, y);
-        this.emitter.setTint(color);
-        this.emitter.explode(30);
-    }
-
-    showFloatText(x, y, text, color) {
-        let txt = this.add.text(x, y, text, { 
-            fontSize: '28px', 
-            fontFamily: 'Segoe UI',
-            fontStyle: 'bold',
-            color: '#fff',
-            stroke: '#000',
-            strokeThickness: 4
-        }).setOrigin(0.5).setDepth(200); // High depth for text
-        
-        this.tweens.add({
-            targets: txt,
-            y: y - 50,
-            alpha: 0,
-            scale: 1.5,
-            duration: 1200,
-            ease: 'Power2',
-            onComplete: () => txt.destroy()
-        });
-    }
-  }
-
-  function attemptClaim(edgeId) {
-    if(!roomData || roomData.state !== 'playing' || roomData.dice.rem <= 0) return;
-    if(isRollingAnim) return; 
-    const turnUid = roomData.turnOrder[roomData.turnIndex];
-    if(turnUid !== myUid) return;
-
-    db.ref(`rooms/${currentRoom}`).transaction(room => {
-      if(!room || room.state !== 'playing' || room.dice.rem <= 0) return room;
-      if(room.turnOrder[room.turnIndex] !== myUid) return;
-      if(room.edges && room.edges[edgeId]) return;
-
-      if(!room.edges) room.edges = {};
-      const pColorIdx = room.players[myUid].colorIdx;
-      room.edges[edgeId] = { cIdx: pColorIdx };
-      room.dice.rem--;
-      
-      if(!room.boxes) room.boxes = {};
-      let hitBoom = false; 
-      let isLucky = false;
-      
-      const check = (r, c) => {
-        if(r<0 || c<0 || r>=room.config.rows || c>=room.config.cols) return;
-        if(room.boxes[`${r}_${c}`] !== undefined) return;
-        
-        const e = room.edges;
-        if(e[`h_${r}_${c}`] && e[`h_${r+1}_${c}`] && e[`v_${r}_${c}`] && e[`v_${r}_${c+1}`]) {
-          room.boxes[`${r}_${c}`] = pColorIdx;
-          room.filledBoxes++;
-
-          let points = 1;
-          const bKey = `${r}_${c}`;
-          if(room.config.mode === 'lucky' && room.specialBoxes) {
-             if(room.specialBoxes[bKey] === 'bonus') {
-                points = 3; isLucky = true;
-             } else if(room.specialBoxes[bKey] === 'boom') {
-                points = 0; hitBoom = true;
-             }
+          // Box Background (Filled or Empty)
+          if(boxes[key] !== undefined) {
+            const color = COLORS[roomData.players[Object.keys(roomData.players).find(k => roomData.players[k].color === boxes[key])].color].hex;
+            this.graphics.fillStyle(color, 0.5); // 0.5 opacity so grid lines show
+            this.graphics.fillRoundedRect(x+2, y+2, size-4, size-4, 8);
+          } else {
+            this.graphics.fillStyle(0xffffff, 0.05);
+            this.graphics.fillRoundedRect(x+2, y+2, size-4, size-4, 8);
           }
-          room.players[myUid].score += points;
-        }
-      };
 
-      const parts = edgeId.split('_');
-      const r = parseInt(parts[1]); const c = parseInt(parts[2]);
-      if(parts[0] === 'h') { check(r, c); check(r-1, c); }
-      else { check(r, c); check(r, c-1); }
-
-      if(room.filledBoxes >= room.totalBoxes) {
-        room.state = 'finished';
-        room.dice.rem = 0;
-      }
-      else {
-        if(hitBoom) {
-             room.dice.rem = 0;
-             room.turnIndex = (room.turnIndex + 1) % room.turnOrder.length;
-        } else if(room.dice.rem === 0) {
-             room.turnIndex = (room.turnIndex + 1) % room.turnOrder.length;
+          // Special Icons
+          if(specs[key] && boxes[key] !== undefined) {
+             const txt = specs[key]==='bonus'?'⭐':'💣';
+             this.add.text(x+size/2, y+size/2, txt, {fontSize: size/2+'px'}).setOrigin(0.5);
+          }
         }
       }
-      room.lastActive = Date.now();
+
+      // Draw Lines & Click Zones
+      const lineThick = Math.max(4, size/15);
       
-      // We do not save soundTrigger to DB to prevent loops, we infer it locally or just play sound
-      let sType = 'line';
-      if(hitBoom) sType = 'boom';
-      else if(isLucky) sType = 'lucky';
-      return room; 
-      
-    }, (error, committed, snapshot) => {
-        if(committed) {
-            // Simple sound logic based on local state changes would be better, 
-            // but for now we play line sound to keep it simple and responsive
-             sndLine.play();
+      // Horizontal
+      for(let r=0; r<=rows; r++) for(let c=0; c<cols; c++) {
+        const id = `h_${r}_${c}`;
+        const x = offX + c*size; const y = offY + r*size;
+        
+        if(edges[id]) {
+          this.graphics.lineStyle(lineThick, COLORS[edges[id].c].hex, 1);
+          this.graphics.strokeLineShape(new Phaser.Geom.Line(x, y, x+size, y));
+        } else {
+           // Invisible Click Zone
+           let z = this.add.rectangle(x+size/2, y, size, lineThick*4, 0xffffff, 0.01).setInteractive();
+           z.on('pointerdown', () => this.claim(id));
+           // Guide dots
+           this.graphics.fillStyle(0x555); this.graphics.fillCircle(x, y, 3);
         }
-    });
+      }
+      
+      // Vertical
+      for(let r=0; r<rows; r++) for(let c=0; c<=cols; c++) {
+        const id = `v_${r}_${c}`;
+        const x = offX + c*size; const y = offY + r*size;
+        
+        if(edges[id]) {
+          this.graphics.lineStyle(lineThick, COLORS[edges[id].c].hex, 1);
+          this.graphics.strokeLineShape(new Phaser.Geom.Line(x, y, x, y+size));
+        } else {
+           let z = this.add.rectangle(x, y+size/2, lineThick*4, size, 0xffffff, 0.01).setInteractive();
+           z.on('pointerdown', () => this.claim(id));
+           this.graphics.fillStyle(0x555); this.graphics.fillCircle(x, y, 3);
+        }
+      }
+      
+      // Corner Dots (Final Polish)
+      this.graphics.fillStyle(0xecf0f1);
+      for(let r=0; r<=rows; r++) for(let c=0; c<=cols; c++) {
+        this.graphics.fillCircle(offX + c*size, offY + r*size, 4);
+      }
+    }
+
+    claim(id) {
+      if(isRolling || roomData.dice.rem <= 0) return;
+      if(roomData.turnOrder[roomData.turnIndex] !== myUid) return;
+
+      db.ref(`rooms/${currentRoom}`).transaction(r => {
+        if(!r || !r.config || r.state !== 'playing' || r.dice.rem <= 0) return;
+        if(r.edges[id]) return; // Already taken
+
+        // Initialize objects if missing (CRITICAL FIX)
+        if(!r.edges) r.edges = {};
+        if(!r.boxes) r.boxes = {};
+
+        const myColor = r.players[myUid].color;
+        r.edges[id] = { c: myColor };
+        r.dice.rem--;
+
+        // Check Boxes
+        let createdBox = false;
+        let boomHit = false;
+
+        const checkBox = (row, col) => {
+           if(row<0 || col<0 || row>=r.config.rows || col>=r.config.cols) return;
+           if(r.boxes[`${row}_${col}`] !== undefined) return; // Already filled
+
+           const e = r.edges;
+           // Check 4 sides
+           if(e[`h_${row}_${col}`] && e[`h_${row+1}_${col}`] && e[`v_${row}_${col}`] && e[`v_${row}_${col+1}`]) {
+             r.boxes[`${row}_${col}`] = myColor;
+             r.filledCount = (r.filledCount || 0) + 1;
+             createdBox = true;
+
+             // Scoring
+             let pts = 1;
+             if(r.specialBoxes && r.specialBoxes[`${row}_${col}`] === 'bonus') pts = 3;
+             if(r.specialBoxes && r.specialBoxes[`${row}_${col}`] === 'boom') { pts = 0; boomHit = true; }
+             
+             r.players[myUid].score += pts;
+           }
+        };
+
+        const p = id.split('_'); 
+        const row = parseInt(p[1]); const col = parseInt(p[2]);
+        
+        if(p[0] === 'h') { checkBox(row, col); checkBox(row-1, col); }
+        else { checkBox(row, col); checkBox(row, col-1); }
+
+        // Logic: If boom hit, turn ends immediately. 
+        // Logic: If normal box made, usually you keep turn, but based on your rule (dice--), we stick to dice logic.
+        
+        if(boomHit) {
+           r.dice.rem = 0; // Turn over
+        }
+
+        if(r.filledCount >= r.totalBoxes) {
+           r.state = 'finished';
+           r.dice.rem = 0;
+        } else if(r.dice.rem === 0) {
+           r.turnIndex = (r.turnIndex + 1) % r.turnOrder.length;
+        }
+        
+        return r;
+      }).then(() => {
+         new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3').play().catch(()=>{});
+      });
+    }
   }
   </script>
 </body>
