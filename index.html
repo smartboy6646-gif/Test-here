@@ -1,499 +1,205 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Dots & Dice - Stable Version</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <style>
-    /* UI DESIGN & FIXES */
-    body, html { height: 100%; margin: 0; background: #2c3e50; font-family: 'Segoe UI', sans-serif; overflow: hidden; touch-action: none; }
-    
-    #game-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; background: #2c3e50; }
-    
-    .ui-panel {
-      position: absolute; background: white; border-radius: 12px; padding: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; text-align: center;
-      width: 85%; max-width: 320px; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RPS Fixed Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        
+        /* Menu Style */
+        #menu {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #222; padding: 20px; border: 2px solid #fff; border-radius: 10px;
+            color: white; text-align: center; z-index: 100; width: 300px;
+        }
+        input { width: 50px; padding: 5px; text-align: center; font-size: 16px; margin: 5px; }
+        button { 
+            background: #0f0; border: none; padding: 10px 20px; font-size: 18px; 
+            margin-top: 15px; cursor: pointer; border-radius: 5px; font-weight: bold;
+        }
 
-    /* 3D DICE SCENE */
-    #dice-scene {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); z-index: 3000;
-      display: none; align-items: center; justify-content: center;
-      perspective: 1000px;
-    }
-    .cube {
-      width: 100px; height: 100px; position: relative;
-      transform-style: preserve-3d; transition: transform 1s ease-out;
-    }
-    .cube.rolling { animation: spinDice 0.5s linear infinite; }
-    .face {
-      position: absolute; width: 100px; height: 100px;
-      background: #fdfdfd; border: 2px solid #999; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-    }
-    .face.front  { transform: rotateY(0deg) translateZ(50px); }
-    .face.back   { transform: rotateY(180deg) translateZ(50px); }
-    .face.right  { transform: rotateY(90deg) translateZ(50px); }
-    .face.left   { transform: rotateY(-90deg) translateZ(50px); }
-    .face.top    { transform: rotateX(90deg) translateZ(50px); }
-    .face.bottom { transform: rotateX(-90deg) translateZ(50px); }
-    .dot-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 70%; height: 70%; }
-    .d-dot { background: #333; border-radius: 50%; width: 14px; height: 14px; margin: auto; }
-
-    @keyframes spinDice { 0% { transform: rotateX(0deg); } 100% { transform: rotateX(360deg) rotateY(360deg); } }
-    .show-1 { transform: rotateX(0deg) rotateY(0deg); }
-    .show-6 { transform: rotateX(180deg) rotateY(0deg); }
-    .show-2 { transform: rotateY(-90deg); }
-    .show-5 { transform: rotateY(90deg); }
-    .show-3 { transform: rotateX(-90deg); }
-    .show-4 { transform: rotateX(90deg); }
-
-    /* CONTROLS */
-    .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 70px; background: rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 500; border-bottom: 2px solid #ddd; }
-    .bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: white; display: flex; align-items: center; justify-content: space-around; z-index: 500; border-top: 2px solid #ddd; padding-bottom: env(safe-area-inset-bottom); }
-
-    input, select { padding: 10px; margin: 8px 0; width: 90%; border: 1px solid #ccc; border-radius: 6px; }
-    button { padding: 12px; margin-top: 5px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; width: 100%; }
-    button:disabled { background: #bdc3c7; }
-    .hidden { display: none !important; }
-    
-    #waitingOverlay, #gameOverOverlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); color: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .score-badge { display: flex; flex-direction: column; align-items: center; margin-left: 10px; font-size: 14px; font-weight: bold; }
-    .p-dot { width: 10px; height: 10px; border-radius: 50%; margin-bottom: 3px; border: 1px solid white; }
-  </style>
+        /* Controls Style */
+        #controls {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 20px;
+            display: none; color: white; align-items: center; gap: 10px; width: 80%; max-width: 400px;
+            z-index: 50;
+        }
+        input[type=range] { flex: 1; }
+        
+        #winner {
+            position: absolute; top: 40%; width: 100%; text-align: center;
+            font-size: 50px; color: white; display: none; text-shadow: 0 0 10px #000; z-index: 60;
+        }
+        #restart {
+            position: absolute; top: 60%; left: 50%; transform: translateX(-50%);
+            display: none; padding: 10px 20px; font-size: 20px; z-index: 60; cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="dice-scene"><div class="cube" id="diceCube">
-    <div class="face front"><div class="dot-grid"><div style="grid-area:2/2" class="d-dot"></div></div></div>
-    <div class="face back"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:2/1" class="d-dot"></div><div style="grid-area:2/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-    <div class="face right"><div class="dot-grid"><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div></div></div>
-    <div class="face left"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:2/2" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-    <div class="face top"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:2/2" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-    <div class="face bottom"><div class="dot-grid"><div style="grid-area:1/1" class="d-dot"></div><div style="grid-area:1/3" class="d-dot"></div><div style="grid-area:3/1" class="d-dot"></div><div style="grid-area:3/3" class="d-dot"></div></div></div>
-  </div></div>
-
-  <div id="game-container"></div>
-
-  <div id="waitingOverlay" class="hidden">
-    <h2>Room Ready</h2>
-    <h1 id="shareCode" style="color:#2ecc71; font-size:40px; margin:10px;">---</h1>
-    <p id="waitText">Waiting for players...</p>
-    <button id="cancelWaitBtn" style="width: auto; background: #555;">Exit</button>
-  </div>
-
-  <div id="gameOverOverlay" class="hidden">
-    <h1 style="color: gold;">GAME OVER</h1>
-    <h2 id="winnerText">---</h2>
-    <div id="finalScores" style="margin:20px 0; font-size:18px;"></div>
-    <button id="restartBtn" style="width: 150px; background: #27ae60;">PLAY AGAIN</button>
-    <button id="leaveGameBtn" style="width: 150px; background: #c0392b; margin-top:10px;">LEAVE</button>
-  </div>
-
-  <div id="lobbyUI" class="ui-panel">
-    <h2 style="color:#2c3e50; margin:0 0 10px 0;">Dots & Dice</h2>
-    <input id="displayName" placeholder="Your Name" maxlength="12" />
-    <input id="roomInput" placeholder="Room Code (e.g. 1234)" style="text-align:center; font-weight:bold; letter-spacing:1px;" />
-    
-    <div style="display:flex; gap:5px;">
-      <select id="gridSize"><option value="4">4x4 Grid</option><option value="5">5x5 Grid</option><option value="6">6x6 Grid</option></select>
-      <select id="maxPlayers"><option value="2">2 Players</option><option value="3">3 Players</option><option value="4">4 Players</option></select>
+    <div id="menu">
+        <h3>🪨 📄 ✂️ Setup</h3>
+        <div>🪨 <input type="number" id="r" value="15"></div>
+        <div>📄 <input type="number" id="p" value="15"></div>
+        <div>✂️ <input type="number" id="s" value="15"></div>
+        <button onclick="startGame()">Start Game 🚀</button>
     </div>
-    <select id="gameMode"><option value="lucky">Lucky Mode (Bombs)</option><option value="classic">Classic Mode</option></select>
-    
-    <button id="createRoomBtn">CREATE ROOM</button>
-    <button id="joinRoomBtn" style="background: #27ae60;">JOIN ROOM</button>
-  </div>
 
-  <div id="gameUI_Top" class="top-bar hidden">
-    <div>
-      <div style="font-size:10px; color:#888;">ROOM</div>
-      <div id="roomLabel" style="font-weight:bold;">---</div>
+    <div id="controls">
+        <span>🐢 Slow</span>
+        <input type="range" min="1" max="100" value="50" oninput="changeSpeed(this.value)">
+        <span>Fast 🐇</span>
     </div>
-    <div id="turnLabel" style="padding:5px 15px; border-radius:20px; font-weight:bold; font-size:14px; background:#ecf0f1;">Wait...</div>
-    <div id="scoreContainer" style="display:flex;"></div>
-  </div>
 
-  <div id="gameUI_Bottom" class="bottom-bar hidden">
-    <button id="rollBtn" style="width: 60%; height:50px; font-size:18px;">ROLL DICE</button>
-    <div style="text-align:center; width:30%;">
-       <div style="font-size:10px; font-weight:bold; color:#7f8c8d;">MOVES LEFT</div>
-       <b id="linesLeft" style="font-size:24px; color:#2c3e50;">0</b>
-    </div>
-  </div>
+    <div id="winner"></div>
+    <button id="restart" onclick="location.reload()">🔄 Restart</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-  <script>
-  // FIREBASE CONFIG (Use your own if needed)
-  const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyCwy91uqMBAM_kXfxd8bE6LsVOXdNL54i8",
-    authDomain: "dotgame-4a8df.firebaseapp.com",
-    databaseURL: "https://dotgame-4a8df-default-rtdb.firebaseio.com",
-    projectId: "dotgame-4a8df",
-    storageBucket: "dotgame-4a8df.firebasestorage.app",
-    messagingSenderId: "420421686536",
-    appId: "1:420421686536:web:ac66a3a4a75aff31c908bd"
-  };
-
-  const COLORS = [
-    { hex: 0xe74c3c, css: '#e74c3c' }, // Red
-    { hex: 0x3498db, css: '#3498db' }, // Blue
-    { hex: 0x2ecc71, css: '#2ecc71' }, // Green
-    { hex: 0xf1c40f, css: '#f1c40f' }  // Yellow
-  ];
-
-  firebase.initializeApp(FIREBASE_CONFIG);
-  const db = firebase.database();
-  const auth = firebase.auth();
-  let myUid, currentRoom, roomData, game;
-  let lastRollTime = 0;
-  let isRolling = false;
-
-  auth.signInAnonymously().then(u => myUid = u.user.uid);
-
-  // --- ROOM LOGIC ---
-  document.getElementById('createRoomBtn').onclick = async () => {
-    const code = document.getElementById('roomInput').value.trim().toUpperCase();
-    const name = document.getElementById('displayName').value || 'Host';
-    if(!code) return alert("Please enter a Room Code");
-    
-    const size = parseInt(document.getElementById('gridSize').value);
-    const mode = document.getElementById('gameMode').value;
-    const maxP = parseInt(document.getElementById('maxPlayers').value);
-
-    // Generate Special Boxes
-    let specials = {};
-    if(mode === 'lucky') {
-      let cells = [];
-      for(let r=0; r<size; r++) for(let c=0; c<size; c++) cells.push(`${r}_${c}`);
-      cells.sort(() => Math.random() - 0.5);
-      // Add random bonuses/bombs
-      for(let i=0; i<Math.ceil(size*0.8); i++) specials[cells[i]] = (i%2===0)?'bonus':'boom';
-    }
-
-    await db.ref('rooms/'+code).set({
-      config: { rows: size, cols: size, maxP, mode },
-      players: { [myUid]: { name, color: 0, score: 0 } },
-      state: 'waiting',
-      turnOrder: [], turnIndex: 0,
-      dice: { val: 0, rem: 0 },
-      latestRoll: { val: 1, ts: 0 },
-      edges: {}, boxes: {}, specialBoxes: specials,
-      filledCount: 0, totalBoxes: size * size
-    });
-    enterRoom(code);
-  };
-
-  document.getElementById('joinRoomBtn').onclick = async () => {
-    const code = document.getElementById('roomInput').value.trim().toUpperCase();
-    const name = document.getElementById('displayName').value || 'Player';
-    if(!code) return alert("Enter Room Code");
-
-    const snap = await db.ref('rooms/'+code).once('value');
-    if(!snap.exists()) return alert("Room not found");
-    const r = snap.val();
-    
-    if(r.state === 'waiting') {
-      const pCount = Object.keys(r.players || {}).length;
-      if(pCount >= r.config.maxP) return alert("Room Full");
-      
-      await db.ref(`rooms/${code}/players/${myUid}`).set({ name, color: pCount, score: 0 });
-      
-      // Start Game if full
-      if(pCount + 1 === r.config.maxP) {
-        const pIds = Object.keys(r.players).concat(myUid).sort(() => Math.random()-0.5);
-        await db.ref(`rooms/${code}`).update({ state: 'playing', turnOrder: pIds, turnIndex: 0 });
-      }
-    }
-    enterRoom(code);
-  };
-
-  document.getElementById('restartBtn').onclick = () => {
-    if(!currentRoom) return;
-    db.ref(`rooms/${currentRoom}`).transaction(r => {
-       if(!r) return r;
-       r.state = 'playing'; r.edges = {}; r.boxes = {}; r.filledCount = 0;
-       r.dice = { val: 0, rem: 0 };
-       Object.keys(r.players).forEach(uid => r.players[uid].score = 0);
-       return r;
-    });
-  };
-  document.getElementById('leaveGameBtn').onclick = () => location.reload();
-
-  function enterRoom(code) {
-    currentRoom = code;
-    document.getElementById('lobbyUI').classList.add('hidden');
-    document.getElementById('roomLabel').innerText = code;
-    
-    if(!game) initPhaser();
-
-    db.ref('rooms/'+code).on('value', snap => {
-      roomData = snap.val();
-      if(!roomData) { alert("Room closed"); location.reload(); return; }
-      
-      updateUI();
-
-      // Sync Dice Animation
-      if(roomData.latestRoll && roomData.latestRoll.ts > lastRollTime) {
-        lastRollTime = roomData.latestRoll.ts;
-        triggerDiceAnim(roomData.latestRoll.val);
-      }
-
-      if(game) game.scene.getScene('GameScene').drawBoard();
-    });
-  }
-
-  function triggerDiceAnim(val) {
-    isRolling = true; updateUI();
-    const scene = document.getElementById('dice-scene');
-    const cube = document.getElementById('diceCube');
-    scene.style.display = 'flex';
-    cube.className = 'cube rolling';
-    // Sound
-    new Audio('https://www.soundjay.com/board-games/sounds/dice-roll-1.mp3').play().catch(()=>{});
-
-    setTimeout(() => {
-      cube.className = 'cube show-' + val;
-      setTimeout(() => {
-        scene.style.display = 'none';
-        isRolling = false; updateUI();
-      }, 1000);
-    }, 600);
-  }
-
-  function updateUI() {
-    const r = roomData;
-    const isMe = r.turnOrder && r.turnOrder[r.turnIndex] === myUid;
-    
-    // Screens
-    document.getElementById('waitingOverlay').classList.toggle('hidden', r.state !== 'waiting');
-    document.getElementById('gameOverOverlay').classList.toggle('hidden', r.state !== 'finished');
-    document.getElementById('gameUI_Top').classList.toggle('hidden', r.state === 'waiting');
-    document.getElementById('gameUI_Bottom').classList.toggle('hidden', r.state === 'waiting');
-    document.getElementById('shareCode').innerText = currentRoom;
-    document.getElementById('waitText').innerText = `Players: ${Object.keys(r.players).length} / ${r.config.maxP}`;
-
-    // Game Over
-    if(r.state === 'finished') {
-      let winner = { name: '', s: -1 };
-      let html = '';
-      Object.values(r.players).forEach(p => {
-        if(p.score > winner.s) winner = { name: p.name, s: p.score, c: p.color };
-        html += `<div style="color:${COLORS[p.color].css}">${p.name}: ${p.score}</div>`;
-      });
-      document.getElementById('winnerText').innerText = `Winner: ${winner.name}`;
-      document.getElementById('winnerText').style.color = COLORS[winner.c].css;
-      document.getElementById('finalScores').innerHTML = html;
-    }
-
-    // Top Bar Scores
-    const sc = document.getElementById('scoreContainer');
-    sc.innerHTML = '';
-    if(r.players) Object.values(r.players).forEach(p => {
-      sc.innerHTML += `<div class="score-badge" style="color:${COLORS[p.color].css}">
-        <div class="p-dot" style="background:${COLORS[p.color].css}"></div>${p.score}
-      </div>`;
-    });
-
-    // Bottom Bar
-    const turnLbl = document.getElementById('turnLabel');
-    const rollBtn = document.getElementById('rollBtn');
-    
-    if(r.state === 'playing') {
-      const pTurn = r.players[r.turnOrder[r.turnIndex]];
-      turnLbl.innerText = isMe ? "YOUR TURN" : `${pTurn.name}'s Turn`;
-      turnLbl.style.background = isMe ? COLORS[pTurn.color].css : '#ecf0f1';
-      turnLbl.style.color = isMe ? 'white' : 'black';
-      
-      document.getElementById('linesLeft').innerText = isRolling ? "..." : r.dice.rem;
-      
-      if(isMe && r.dice.rem === 0 && !isRolling) {
-        rollBtn.disabled = false; rollBtn.innerText = "ROLL DICE";
-      } else {
-        rollBtn.disabled = true; rollBtn.innerText = isRolling ? "ROLLING..." : (isMe ? "DRAW LINES" : "WAITING...");
-      }
-    }
-  }
-
-  document.getElementById('rollBtn').onclick = () => {
-    const val = Math.floor(Math.random() * 6) + 1;
-    db.ref(`rooms/${currentRoom}`).update({
-      dice: { val, rem: val },
-      latestRoll: { val, ts: Date.now() }
-    });
-  };
-
-  // --- PHASER GRAPHICS ---
-  function initPhaser() {
-    game = new Phaser.Game({
-      type: Phaser.AUTO, parent: 'game-container',
-      width: window.innerWidth, height: window.innerHeight,
-      transparent: true, scene: GameScene,
-      scale: { mode: Phaser.Scale.RESIZE }
-    });
-  }
-
-  class GameScene extends Phaser.Scene {
-    create() { this.graphics = this.add.graphics(); this.drawBoard(); }
-    
-    drawBoard() {
-      if(!roomData || !roomData.config) return;
-      this.graphics.clear();
-      // Safe cleanup of old zones if needed (Phaser handles click zones well usually)
-      this.children.list.forEach(c => { if(c.type === 'Rectangle') c.destroy(); });
-
-      const { rows, cols } = roomData.config;
-      const padTop = 80; const padBot = 90;
-      const w = this.scale.width; const h = this.scale.height;
-      
-      // Calculate perfect square size
-      const size = Math.min((w - 40) / cols, (h - padTop - padBot) / rows);
-      const offX = (w - (cols * size)) / 2;
-      const offY = padTop + ((h - padTop - padBot) - (rows * size)) / 2;
-
-      const boxes = roomData.boxes || {};
-      const edges = roomData.edges || {};
-      const specs = roomData.specialBoxes || {};
-
-      // Draw Grid & Boxes
-      for(let r=0; r<rows; r++) {
-        for(let c=0; c<cols; c++) {
-          const x = offX + c*size; const y = offY + r*size;
-          const key = `${r}_${c}`;
-
-          // Box Background (Filled or Empty)
-          if(boxes[key] !== undefined) {
-            const color = COLORS[roomData.players[Object.keys(roomData.players).find(k => roomData.players[k].color === boxes[key])].color].hex;
-            this.graphics.fillStyle(color, 0.5); // 0.5 opacity so grid lines show
-            this.graphics.fillRoundedRect(x+2, y+2, size-4, size-4, 8);
-          } else {
-            this.graphics.fillStyle(0xffffff, 0.05);
-            this.graphics.fillRoundedRect(x+2, y+2, size-4, size-4, 8);
-          }
-
-          // Special Icons
-          if(specs[key] && boxes[key] !== undefined) {
-             const txt = specs[key]==='bonus'?'⭐':'💣';
-             this.add.text(x+size/2, y+size/2, txt, {fontSize: size/2+'px'}).setOrigin(0.5);
-          }
-        }
-      }
-
-      // Draw Lines & Click Zones
-      const lineThick = Math.max(4, size/15);
-      
-      // Horizontal
-      for(let r=0; r<=rows; r++) for(let c=0; c<cols; c++) {
-        const id = `h_${r}_${c}`;
-        const x = offX + c*size; const y = offY + r*size;
+    <script>
+        let game;
         
-        if(edges[id]) {
-          this.graphics.lineStyle(lineThick, COLORS[edges[id].c].hex, 1);
-          this.graphics.strokeLineShape(new Phaser.Geom.Line(x, y, x+size, y));
-        } else {
-           // Invisible Click Zone
-           let z = this.add.rectangle(x+size/2, y, size, lineThick*4, 0xffffff, 0.01).setInteractive();
-           z.on('pointerdown', () => this.claim(id));
-           // Guide dots
-           this.graphics.fillStyle(0x555); this.graphics.fillCircle(x, y, 3);
-        }
-      }
-      
-      // Vertical
-      for(let r=0; r<rows; r++) for(let c=0; c<=cols; c++) {
-        const id = `v_${r}_${c}`;
-        const x = offX + c*size; const y = offY + r*size;
-        
-        if(edges[id]) {
-          this.graphics.lineStyle(lineThick, COLORS[edges[id].c].hex, 1);
-          this.graphics.strokeLineShape(new Phaser.Geom.Line(x, y, x, y+size));
-        } else {
-           let z = this.add.rectangle(x, y+size/2, lineThick*4, size, 0xffffff, 0.01).setInteractive();
-           z.on('pointerdown', () => this.claim(id));
-           this.graphics.fillStyle(0x555); this.graphics.fillCircle(x, y, 3);
-        }
-      }
-      
-      // Corner Dots (Final Polish)
-      this.graphics.fillStyle(0xecf0f1);
-      for(let r=0; r<=rows; r++) for(let c=0; c<=cols; c++) {
-        this.graphics.fillCircle(offX + c*size, offY + r*size, 4);
-      }
-    }
+        class GameScene extends Phaser.Scene {
+            constructor() { super('GameScene'); }
 
-    claim(id) {
-      if(isRolling || roomData.dice.rem <= 0) return;
-      if(roomData.turnOrder[roomData.turnIndex] !== myUid) return;
+            init(data) {
+                this.counts = data;
+                this.gameOver = false;
+            }
 
-      db.ref(`rooms/${currentRoom}`).transaction(r => {
-        if(!r || !r.config || r.state !== 'playing' || r.dice.rem <= 0) return;
-        if(r.edges[id]) return; // Already taken
+            create() {
+                // 1. Box Creation (White Border)
+                let offset = 20; // Screen vanda ali vitra box banaune
+                let w = this.scale.width - (offset * 2);
+                let h = this.scale.height - (offset * 2);
+                
+                // Physics world ko boundary set garne (Box ko size)
+                this.physics.world.setBounds(offset, offset, w, h);
 
-        // Initialize objects if missing (CRITICAL FIX)
-        if(!r.edges) r.edges = {};
-        if(!r.boxes) r.boxes = {};
+                // Visual Border (Box dekhauna lai)
+                let graphics = this.add.graphics();
+                graphics.lineStyle(4, 0xffffff);
+                graphics.strokeRect(offset, offset, w, h);
 
-        const myColor = r.players[myUid].color;
-        r.edges[id] = { c: myColor };
-        r.dice.rem--;
+                // 2. Group Creation
+                this.emojis = this.physics.add.group();
 
-        // Check Boxes
-        let createdBox = false;
-        let boomHit = false;
+                // 3. Emojis Spawn garne Function
+                const addEmoji = (type, count) => {
+                    for(let i=0; i<count; i++) {
+                        // Random Position (Box vitra matra)
+                        let x = Phaser.Math.Between(offset + 20, w - 20);
+                        let y = Phaser.Math.Between(offset + 20, h - 20);
 
-        const checkBox = (row, col) => {
-           if(row<0 || col<0 || row>=r.config.rows || col>=r.config.cols) return;
-           if(r.boxes[`${row}_${col}`] !== undefined) return; // Already filled
+                        let text = this.add.text(x, y, type, { fontSize: '32px' });
+                        text.setOrigin(0.5);
+                        
+                        this.physics.add.existing(text);
+                        
+                        // Physics Properties
+                        text.body.setCircle(15);
+                        text.body.setCollideWorldBounds(true);
+                        text.body.setBounce(1.1); // 1.1 le garda energy loss hudaina (move vairakhxa)
+                        
+                        // FIX: Ensure Velocity is never 0 (High Speed)
+                        let vx = Phaser.Math.Between(200, 400) * (Math.random() > 0.5 ? 1 : -1);
+                        let vy = Phaser.Math.Between(200, 400) * (Math.random() > 0.5 ? 1 : -1);
+                        text.body.setVelocity(vx, vy);
 
-           const e = r.edges;
-           // Check 4 sides
-           if(e[`h_${row}_${col}`] && e[`h_${row+1}_${col}`] && e[`v_${row}_${col}`] && e[`v_${row}_${col+1}`]) {
-             r.boxes[`${row}_${col}`] = myColor;
-             r.filledCount = (r.filledCount || 0) + 1;
-             createdBox = true;
+                        text.typeData = type; // Type save garne
+                        this.emojis.add(text);
+                    }
+                };
 
-             // Scoring
-             let pts = 1;
-             if(r.specialBoxes && r.specialBoxes[`${row}_${col}`] === 'bonus') pts = 3;
-             if(r.specialBoxes && r.specialBoxes[`${row}_${col}`] === 'boom') { pts = 0; boomHit = true; }
-             
-             r.players[myUid].score += pts;
-           }
-        };
+                addEmoji('🪨', this.counts.r);
+                addEmoji('📄', this.counts.p);
+                addEmoji('✂️', this.counts.s);
 
-        const p = id.split('_'); 
-        const row = parseInt(p[1]); const col = parseInt(p[2]);
-        
-        if(p[0] === 'h') { checkBox(row, col); checkBox(row-1, col); }
-        else { checkBox(row, col); checkBox(row, col-1); }
+                // 4. Collision Logic
+                this.physics.add.collider(this.emojis, this.emojis, (a, b) => this.fight(a, b));
+            }
 
-        // Logic: If boom hit, turn ends immediately. 
-        // Logic: If normal box made, usually you keep turn, but based on your rule (dice--), we stick to dice logic.
-        
-        if(boomHit) {
-           r.dice.rem = 0; // Turn over
+            fight(a, b) {
+                if(a.typeData === b.typeData) return;
+
+                const map = { '🪨': '✂️', '✂️': '📄', '📄': '🪨' };
+
+                if(map[a.typeData] === b.typeData) {
+                    this.transform(b, a.typeData); // A wins
+                } else {
+                    this.transform(a, b.typeData); // B wins
+                }
+            }
+
+            transform(loser, newType) {
+                loser.setText(newType);
+                loser.typeData = newType;
+                
+                // Pop Effect
+                this.tweens.add({
+                    targets: loser, scale: { from: 1.5, to: 1 }, duration: 150, yoyo: true
+                });
+
+                this.checkWin();
+            }
+
+            checkWin() {
+                if(this.gameOver) return;
+                
+                let counts = { '🪨': 0, '📄': 0, '✂️': 0 };
+                let total = 0;
+                this.emojis.getChildren().forEach(e => { counts[e.typeData]++; total++; });
+
+                if(counts['🪨'] == total || counts['📄'] == total || counts['✂️'] == total) {
+                    this.gameOver = true;
+                    let winner = counts['🪨'] == total ? '🪨' : (counts['📄'] == total ? '📄' : '✂️');
+                    
+                    document.getElementById('winner').innerHTML = `WINNER<br>${winner}`;
+                    document.getElementById('winner').style.display = 'block';
+                    document.getElementById('restart').style.display = 'block';
+                    document.getElementById('controls').style.display = 'none';
+                }
+            }
         }
 
-        if(r.filledCount >= r.totalBoxes) {
-           r.state = 'finished';
-           r.dice.rem = 0;
-        } else if(r.dice.rem === 0) {
-           r.turnIndex = (r.turnIndex + 1) % r.turnOrder.length;
+        function startGame() {
+            let r = parseInt(document.getElementById('r').value);
+            let p = parseInt(document.getElementById('p').value);
+            let s = parseInt(document.getElementById('s').value);
+
+            if(!r && !p && !s) return alert("Number halnu paryo!");
+
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('controls').style.display = 'flex';
+
+            const config = {
+                type: Phaser.AUTO,
+                width: window.innerWidth,
+                height: window.innerHeight,
+                backgroundColor: '#111',
+                physics: { default: 'arcade', arcade: { debug: false } },
+                scene: [GameScene]
+            };
+
+            game = new Phaser.Game(config);
+            game.scene.start('GameScene', { r, p, s });
         }
-        
-        return r;
-      }).then(() => {
-         new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3').play().catch(()=>{});
-      });
-    }
-  }
-  </script>
+
+        // Speed Slider Logic
+        function changeSpeed(val) {
+            if(!game) return;
+            // Val 0-100. 
+            // 0 (Left) = Slow (TimeScale 2.0)
+            // 50 (Mid) = Normal (TimeScale 1.0)
+            // 100 (Right) = Fast (TimeScale 0.2)
+            
+            // Map 0-100 to 2.0-0.2
+            let timeScale = 2.0 - (val / 100 * 1.8);
+            game.scene.scenes[0].physics.world.timeScale = timeScale;
+        }
+
+    </script>
 </body>
 </html>
