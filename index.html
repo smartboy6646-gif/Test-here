@@ -5,35 +5,34 @@
   <title>Happy Propose Day ❤️</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Parisienne&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; padding: 0; background: #000; overflow: hidden; font-family: 'Poppins', sans-serif; }
+    body { margin: 0; padding: 0; background: #000; overflow: hidden; font-family: sans-serif; }
     #gameContainer { width: 100vw; height: 100vh; }
     
-    /* मोबाइलको लागि बटन */
+    /* सुरु गर्ने बटन (Overlay) */
     #overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.9);
+        background: rgba(0,0,0,0.85);
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         z-index: 999; cursor: pointer;
     }
-    .heart-btn {
-        font-size: 80px; animation: pulse 1.2s infinite;
+    .btn {
+        border: 2px solid #ff4d6d; color: white; padding: 15px 40px;
+        border-radius: 50px; font-size: 22px; margin-top: 20px;
+        background: linear-gradient(45deg, #ff4d6d, #ff8fa3);
+        box-shadow: 0 0 20px rgba(255, 77, 109, 0.6);
+        animation: pulse 1.5s infinite;
     }
-    .text-tap { 
-        color: white; font-size: 18px; margin-top: 10px; border: 1px solid #ff4d6d; 
-        padding: 10px 20px; border-radius: 20px; background: rgba(255, 77, 109, 0.2);
-    }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body>
 
 <div id="overlay" onclick="startExperience()">
-    <div class="heart-btn">💌</div>
-    <div class="text-tap">Click Here to Open ❤️</div>
-    <div style="color: #bbb; margin-top: 10px; font-size: 12px;">(Sound On 🔊)</div>
+    <div style="font-size: 60px;">💌</div>
+    <div class="btn">Click Here to Open</div>
+    <div style="color: #bbb; margin-top: 10px; font-size: 14px;">(Turn on Sound 🔊)</div>
 </div>
 
 <div id="gameContainer"></div>
@@ -41,16 +40,19 @@
 <script>
 // --- सेटिङ्हरू ---
 const CONFIG = {
-    // फोटोको लिङ्क (अनलाइन लिङ्क राख्नुहोला, कम्प्युटरको 'C:/Users...' ले काम गर्दैन)
+    // यहाँ आफ्नो फोटोको लिङ्क राख्नुहोस्
     photoUrl: 'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?ixlib=rb-4.0.3&w=800&q=80',
-    // GitHub मा song.mp3 अपलोड गर्नुभएको छ भने यही ठीक छ
-    musicUrl: 'song.mp3' 
+    // गीतको लिङ्क
+    musicUrl: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_5116345842.mp3?filename=romantic-wedding-piano-123765.mp3'
 };
 
 let game;
 
 function startExperience() {
+    // Overlay हटाउने
     document.getElementById('overlay').style.display = 'none';
+    
+    // गेम सुरु गर्ने
     const config = {
         type: Phaser.AUTO,
         parent: 'gameContainer',
@@ -77,46 +79,64 @@ class MainScene extends Phaser.Scene {
 
         // १. ब्याकग्राउन्ड
         const graphics = this.add.graphics();
-        graphics.fillGradientStyle(0x2c0e37, 0x2c0e37, 0x000000, 0x000000, 1);
+        graphics.fillGradientStyle(0x2c0e37, 0x2c0e37, 0x0f0c29, 0x0f0c29, 1);
         graphics.fillRect(0, 0, w, h);
 
-        // २. म्युजिक
+        // २. चित्रहरू बनाउने
+        this.createTextures();
+
+        // ३. गीत बजाउने
         try {
             this.sound.pauseOnBlur = false;
             const music = this.sound.add('bgm', { volume: 0.6, loop: true });
             music.play();
-        } catch(e) { console.log("Music error"); }
+        } catch(e) { console.log("Audio failed due to browser policy"); }
 
-        // ३. पार्टिकल्स (Particles)
-        this.add.particles(0, 0, this.createDot(), {
-            x: { min: 0, max: w }, y: h + 20,
-            speedY: { min: -40, max: -90 },
-            scale: { start: 0.6, end: 0 },
-            lifespan: 5000,
+        // ४. पार्टिकल्स
+        this.add.particles(0, 0, 'dot', {
+            x: { min: 0, max: w },
+            y: h + 50,
+            speedY: { min: -50, max: -100 },
+            scale: { start: 0.5, end: 0 },
+            alpha: { start: 0.8, end: 0 },
+            lifespan: 6000,
             quantity: 2,
             blendMode: 'ADD',
-            tint: [0xff4d6d, 0xffffff]
+            tint: [ 0xff6699, 0xffffff, 0xff99cc ]
         });
 
-        // ४. मुटु सुरुमा
-        this.heart = this.add.text(w/2, h/2 - 60, '❤️', { fontSize: '80px' })
-            .setOrigin(0.5).setAlpha(0);
+        // ५. मुटु (Heart) - फिक्स गरिएको भाग
+        this.heart = this.add.text(w/2, h/2 - 180, '❤️', { 
+            fontSize: '280px',
+            padding: { top: 20, bottom: 20 }
+        }).setOrigin(0.5).setScale(0).setAlpha(0);
 
+        // ६. एनिमेसन सुरु
         this.startSequence();
     }
 
-    createDot() {
+    createTextures() {
         const dot = this.make.graphics({x:0, y:0, add:false});
-        dot.fillStyle(0xffffff).fillCircle(5, 5, 5);
-        dot.generateTexture('dot', 10, 10);
-        return 'dot';
+        dot.fillStyle(0xffffff);
+        dot.fillCircle(10, 10, 10);
+        dot.generateTexture('dot', 20, 20);
     }
 
     startSequence() {
         this.tweens.add({
-            targets: this.heart, scale: 1.2, alpha: 1, duration: 1000, ease: 'Back.Out',
+            targets: this.heart,
+            scale: 1,
+            alpha: 1,
+            duration: 1000,
+            ease: 'Back.Out',
             onComplete: () => {
-                this.tweens.add({ targets: this.heart, scale: 1.4, duration: 600, yoyo: true, repeat: -1 });
+                this.tweens.add({
+                    targets: this.heart,
+                    scale: 1.1,
+                    duration: 600,
+                    yoyo: true,
+                    repeat: -1
+                });
                 this.showText();
             }
         });
@@ -134,72 +154,64 @@ class MainScene extends Phaser.Scene {
         ];
 
         let delay = 0;
-        let txt = null; // Variable Fixed Here
+        let txt = null;
 
         messages.forEach((m, i) => {
             this.time.delayedCall(delay, () => {
-                // पुरानो टेक्स्ट हटाउने
                 if(txt) {
                     this.tweens.add({ targets: txt, alpha: 0, y: txt.y - 40, duration: 600 });
                 }
 
-                // फन्ट साइज ठुलो बनाउने फर्मुला
-                const size = Math.min(45, (this.scale.width - 20) / m.length * 2.2);
+                const size = Math.min(45, (this.scale.width - 20) / (m.length / 1.8));
 
                 txt = this.add.text(this.scale.width/2, this.scale.height/2 + 100, m, {
                     fontSize: size + 'px', 
                     fill: '#fff', 
                     align: 'center', 
                     fontStyle: 'bold',
-                    wordWrap: { width: this.scale.width - 30 },
+                    wordWrap: { width: this.scale.width - 20, useAdvancedWrap: true },
                     stroke: '#ff4d6d', 
                     strokeThickness: 3, 
-                    shadow: { blur: 15, color: '#ff4d6d', fill: true }
+                    shadow: { blur: 15, color: '#ff4d6d', fill: true },
+                    padding: { top: 40, bottom: 40, left: 15, right: 15 }
                 }).setOrigin(0.5).setAlpha(0);
 
-                // नयाँ टेक्स्ट देखाउने
                 this.tweens.add({ targets: txt, alpha: 1, y: this.scale.height/2 + 80, duration: 800 });
 
-                // अन्तिममा फोटो देखाउने
                 if(i === messages.length - 1) {
                     this.time.delayedCall(3500, () => this.revealPhoto(txt));
                 }
             });
             delay += 3000;
         });
-    } // यहाँ ब्र्याकेट छुटेको थियो, अब फिक्स भयो
+    }
 
     revealPhoto(lastText) {
-        // मुटु र टेक्स्ट लुकाउने
         this.tweens.add({ targets: [this.heart, lastText], alpha: 0, duration: 1000 });
 
         const cx = this.scale.width / 2;
         const cy = this.scale.height / 2;
-        const size = Math.min(this.scale.width, this.scale.height) * 0.7; // फोटो साइज
+        const size = Math.min(this.scale.width, this.scale.height) * 0.6;
 
         const container = this.add.container(cx, cy).setAlpha(0).setScale(0.5);
 
-        // सेतो बोर्डर
-        const bg = this.add.rectangle(0, 0, size + 20, size + 70, 0xffffff);
+        const bg = this.add.rectangle(0, 0, size + 20, size + 60, 0xffffff);
         
-        // फोटो लोड भयो कि भएन चेक गर्ने
         let img;
         if(this.textures.exists('userPhoto')) {
             img = this.add.image(0, -20, 'userPhoto').setDisplaySize(size, size);
         } else {
-            // फोटो लोड नभए कालो बक्स
-            img = this.add.rectangle(0, -20, size, size, 0x222222);
-            const err = this.add.text(0,-20, "Photo Loading...", {color:'white'}).setOrigin(0.5);
-            container.add(err);
+            img = this.add.rectangle(0, -20, size, size, 0x333333);
+            const errText = this.add.text(0, -20, "Photo Loading...", { color:'#fff' }).setOrigin(0.5);
+            container.add(errText);
         }
 
-        const caption = this.add.text(0, size/2 + 10, "Forever & Always", {
-            fontFamily: 'Parisienne', fontSize: '24px', color: '#000', fontStyle: 'bold'
+        const caption = this.add.text(0, size/2 + 15, "Forever & Always", {
+            fontSize: '24px', color: '#000', fontStyle: 'bold'
         }).setOrigin(0.5);
 
         container.add([bg, img, caption]);
 
-        // Flash Effect
         const flash = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0xffffff).setOrigin(0).setAlpha(0);
         
         this.tweens.add({
