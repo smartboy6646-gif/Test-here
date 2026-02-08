@@ -1,259 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rock Paper Scissors Auto-Simulation</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #f0f0f0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        canvas {
-            display: block;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>Happy Propose Day ❤️</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+    #gameContainer { width: 100vw; height: 100vh; }
+    
+    /* सुरु गर्ने बटन (Overlay) */
+    #overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        z-index: 999; cursor: pointer;
+    }
+    .btn {
+        border: 2px solid #ff4d6d; color: white; padding: 15px 40px;
+        border-radius: 50px; font-size: 22px; margin-top: 20px;
+        background: linear-gradient(45deg, #ff4d6d, #ff8fa3);
+        box-shadow: 0 0 20px rgba(255, 77, 109, 0.6);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  </style>
 </head>
 <body>
 
+<div id="overlay" onclick="startExperience()">
+    <div style="font-size: 60px;">💌</div>
+    <div class="btn">Click Here to Open</div>
+    <div style="color: #bbb; margin-top: 10px; font-size: 14px;">(Turn on Sound 🔊)</div>
+</div>
+
+<div id="gameContainer"></div>
+
 <script>
+// --- सेटिङ्हरू (तपाईंले यहाँ फोटो र गीत फेर्न सक्नुहुन्छ) ---
+const CONFIG = {
+    // यहाँ आफ्नो फोटोको लिङ्क राख्नुहोस्
+    photoUrl: 'https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?ixlib=rb-4.0.3&w=800&q=80',
+    // गीतको लिङ्क
+    musicUrl: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_5116345842.mp3?filename=romantic-wedding-piano-123765.mp3'
+};
+
+let game;
+
+function startExperience() {
+    // Overlay हटाउने
+    document.getElementById('overlay').style.display = 'none';
+    
+    // गेम सुरु गर्ने
+    const config = {
+        type: Phaser.AUTO,
+        parent: 'gameContainer',
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor: '#1a1a2e',
+        scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
+        scene: MainScene
+    };
+    game = new Phaser.Game(config);
+}
+
 class MainScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'MainScene' });
-    }
+    constructor() { super('MainScene'); }
 
     preload() {
-        // No external assets needed, using pure Text objects
+        // फोटो लोड गर्ने (यदि लोड भएन भने पनि कोड नरोकिने बनाएको छु)
+        this.load.image('userPhoto', CONFIG.photoUrl);
+        this.load.audio('bgm', CONFIG.musicUrl);
     }
 
     create() {
-        // --- Configuration ---
-        this.entityCount = 60; // Total entities
-        this.speedBase = 150;  // Base velocity
-        this.types = ['rock', 'paper', 'scissors'];
-        this.emojis = { rock: '🪨', paper: '📄', scissors: '✂️' };
-        this.colors = { rock: '#555555', paper: '#aaaaaa', scissors: '#e74c3c' };
-        
-        // --- State ---
-        this.entities = this.physics.add.group();
-        this.simulationRunning = true;
-        this.timeScaleValue = 1;
+        const w = this.scale.width;
+        const h = this.scale.height;
 
-        // --- Create Entities ---
-        for (let i = 0; i < this.entityCount; i++) {
-            this.spawnEntity();
-        }
+        // १. ब्याकग्राउन्ड (Gradient)
+        const graphics = this.add.graphics();
+        graphics.fillGradientStyle(0x2c0e37, 0x2c0e37, 0x0f0c29, 0x0f0c29, 1);
+        graphics.fillRect(0, 0, w, h);
 
-        // --- Collisions ---
-        this.physics.add.collider(this.entities, this.entities, this.handleCollision, null, this);
+        // २. चित्रहरू आफैं बनाउने (No External Images needed)
+        this.createTextures();
 
-        // --- UI Layer ---
-        this.createUI();
+        // ३. गीत बजाउने (Error Proof)
+        try {
+            this.sound.pauseOnBlur = false;
+            const music = this.sound.add('bgm', { volume: 0.6, loop: true });
+            music.play();
+        } catch(e) { console.log("Audio failed due to browser policy"); }
 
-        // --- Controls ---
-        this.createControls();
-    }
-
-    spawnEntity() {
-        const x = Phaser.Math.Between(50, this.scale.width - 50);
-        const y = Phaser.Math.Between(100, this.scale.height - 50);
-        const type = Phaser.Utils.Array.GetRandom(this.types);
-        
-        const entity = this.add.text(x, y, this.emojis[type], {
-            fontSize: '32px'
+        // ४. पार्टिकल्स (Particles)
+        this.add.particles(0, 0, 'dot', {
+            x: { min: 0, max: w },
+            y: h + 50,
+            speedY: { min: -50, max: -100 },
+            scale: { start: 0.5, end: 0 },
+            alpha: { start: 0.8, end: 0 },
+            lifespan: 6000,
+            quantity: 2,
+            blendMode: 'ADD',
+            tint: [ 0xff6699, 0xffffff, 0xff99cc ]
         });
 
-        // Setup Physics
-        this.physics.add.existing(entity);
-        entity.body.setCollideWorldBounds(true);
-        entity.body.setBounce(1, 1);
-        
-        // Circular collider approximates the emoji shape better
-        entity.body.setCircle(16, 0, 0); 
-        
-        // Random Velocity
-        const vx = Phaser.Math.Between(-this.speedBase, this.speedBase);
-        const vy = Phaser.Math.Between(-this.speedBase, this.speedBase);
-        entity.body.setVelocity(vx || 100, vy || 100); // Ensure not zero
+        // ५. मुटु (Heart) - टेक्स्टको रुपमा (यो कहिल्यै फेल हुँदैन)
+        this.heart = this.add.text(w/2, h/2 - 50, '❤️', { fontSize: '100px' })
+            .setOrigin(0.5).setScale(0).setAlpha(0);
 
-        // Store type data
-        entity.setData('type', type);
-        
-        this.entities.add(entity);
+        // ६. एनिमेसन सुरु
+        this.startSequence();
     }
 
-    handleCollision(obj1, obj2) {
-        if (!this.simulationRunning) return;
-
-        const type1 = obj1.getData('type');
-        const type2 = obj2.getData('type');
-
-        // If same type, just physics bounce (handled by collider), no logic needed
-        if (type1 === type2) return;
-
-        // Rock(0) > Scissors(2)
-        // Scissors(2) > Paper(1)
-        // Paper(1) > Rock(0)
-
-        let winner = null;
-        let loser = null;
-
-        // Logic
-        if (type1 === 'rock' && type2 === 'scissors') { winner = obj1; loser = obj2; }
-        else if (type1 === 'scissors' && type2 === 'paper') { winner = obj1; loser = obj2; }
-        else if (type1 === 'paper' && type2 === 'rock') { winner = obj1; loser = obj2; }
-        else if (type2 === 'rock' && type1 === 'scissors') { winner = obj2; loser = obj1; }
-        else if (type2 === 'scissors' && type1 === 'paper') { winner = obj2; loser = obj1; }
-        else if (type2 === 'paper' && type1 === 'rock') { winner = obj2; loser = obj1; }
-
-        if (winner && loser) {
-            this.convertEntity(loser, winner.getData('type'));
-        }
+    // चित्रहरू कोडबाटै बनाउने फन्क्सन
+    createTextures() {
+        // सानो थोप्लो (Particle)
+        const dot = this.make.graphics({x:0, y:0, add:false});
+        dot.fillStyle(0xffffff);
+        dot.fillCircle(10, 10, 10);
+        dot.generateTexture('dot', 20, 20);
     }
 
-    convertEntity(entity, newType) {
-        // Visual feedback
-        entity.setText(this.emojis[newType]);
-        entity.setData('type', newType);
-
-        // Pop animation
+    startSequence() {
+        // मुटु जुम हुने
         this.tweens.add({
-            targets: entity,
-            scaleX: 1.5,
-            scaleY: 1.5,
-            duration: 100,
-            yoyo: true,
-            ease: 'Sine.easeInOut'
-        });
-    }
-
-    createUI() {
-        const style = { font: 'bold 20px Arial', fill: '#333' };
-        
-        this.rockText = this.add.text(20, 20, '', style);
-        this.paperText = this.add.text(120, 20, '', style);
-        this.scissorsText = this.add.text(240, 20, '', style);
-
-        // Win Text (Hidden initially)
-        this.winText = this.add.text(this.scale.width / 2, this.scale.height / 2, '', {
-            font: 'bold 48px Arial',
-            fill: '#000',
-            backgroundColor: '#ffffffaa',
-            padding: { x: 20, y: 10 }
-        }).setOrigin(0.5).setVisible(false).setDepth(100);
-    }
-
-    createControls() {
-        // Speed Button
-        const btnStyle = { font: '16px Arial', fill: '#fff', backgroundColor: '#333', padding: { x: 10, y: 5 } };
-        
-        this.speedBtn = this.add.text(this.scale.width - 100, 20, 'Speed: 1x', btnStyle)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => this.toggleSpeed());
-
-        // Restart Button
-        this.restartBtn = this.add.text(this.scale.width - 180, 20, 'Restart', btnStyle)
-            .setInteractive({ useHandCursor: true })
-            .on('pointerdown', () => this.scene.restart());
-    }
-
-    toggleSpeed() {
-        if (this.timeScaleValue === 1) {
-            this.timeScaleValue = 2;
-        } else if (this.timeScaleValue === 2) {
-            this.timeScaleValue = 4;
-        } else {
-            this.timeScaleValue = 1;
-        }
-        
-        this.physics.world.timeScale = 1 / this.timeScaleValue; // Physics timeScale is inverse (smaller = faster)
-        this.speedBtn.setText(`Speed: ${this.timeScaleValue}x`);
-    }
-
-    update() {
-        if (!this.simulationRunning) return;
-
-        // Count entities
-        let r = 0, p = 0, s = 0;
-        
-        this.entities.getChildren().forEach(e => {
-            const type = e.getData('type');
-            if (type === 'rock') r++;
-            if (type === 'paper') p++;
-            if (type === 'scissors') s++;
-            
-            // Minimal random movement jitter for "organic" feel
-            if (Phaser.Math.Between(0, 100) > 98) {
-                e.body.velocity.rotate(Phaser.Math.DegToRad(Phaser.Math.Between(-15, 15)));
+            targets: this.heart,
+            scale: 1,
+            alpha: 1,
+            duration: 1000,
+            ease: 'Back.Out',
+            onComplete: () => {
+                // ढुकढुकी (Heartbeat)
+                this.tweens.add({
+                    targets: this.heart,
+                    scale: 1.2,
+                    duration: 500,
+                    yoyo: true,
+                    repeat: -1
+                });
+                this.showText();
             }
         });
-
-        // Update UI
-        this.rockText.setText(`${this.emojis.rock} ${r}`);
-        this.paperText.setText(`${this.emojis.paper} ${p}`);
-        this.scissorsText.setText(`${this.emojis.scissors} ${s}`);
-
-        // Check Win Condition
-        this.checkWin(r, p, s);
     }
 
-    checkWin(r, p, s) {
-        const total = r + p + s;
-        let winner = '';
+    showText() {
+     const messages = [
+            "तिमी मेरो जीवनको त्यो सुन्दर उपहार हौ...",
+            "जसको मुस्कानमा मेरो सारा संसार छ",
+            "तिम्रो साथ बिना यो मुटु अधुरो छ",
+            "हरेक जन्म तिम्रै भएर बाँच्न चाहन्छु",
+            "तिमीलाई सधैं खुसी राख्ने वाचा गर्छु",
+            "Happy Propose Day, My Everything ❤️",
+            "💖 I LOVE YOU SANCHITA BUDI 💖"
+        ];
+        let delay = 0;
+        let currentObj = null;
 
-        if (r === total) winner = "ROCK WINS!";
-        else if (p === total) winner = "PAPER WINS!";
-        else if (s === total) winner = "SCISSORS WINS!";
+        messages.forEach((msg, i) => {
+            this.time.delayedCall(delay, () => {
+                if(currentObj) {
+                    this.tweens.add({ targets: currentObj, alpha: 0, y: currentObj.y - 30, duration: 500 });
+                }
 
-        if (winner !== '') {
-            this.simulationRunning = false;
-            this.physics.pause();
-            this.winText.setText(winner).setVisible(true);
-            
-            // Celebration Tween
-            this.tweens.add({
-                targets: this.winText,
-                scale: 1.2,
-                duration: 500,
-                yoyo: true,
-                repeat: -1
+                const fontSize = Math.min(50, this.scale.width / msg.length * 1.5);
+                
+                currentObj = this.add.text(this.scale.width/2, this.scale.height/2 + 80, msg, {
+                    fontFamily: 'sans-serif',
+                    fontSize: fontSize + 'px',
+                    color: '#fff',
+                    stroke: '#ff0066',
+                    strokeThickness: 2,
+                    shadow: { blur: 10, color: '#ff0066', fill: true }
+                }).setOrigin(0.5).setAlpha(0).setY(this.scale.height/2 + 120);
+
+                this.tweens.add({
+                    targets: currentObj,
+                    y: this.scale.height/2 + 80,
+                    alpha: 1,
+                    duration: 800
+                });
+
+                // अन्तिममा फोटो देखाउने
+                if(i === messages.length - 1) {
+                    this.time.delayedCall(3000, () => this.revealPhoto(currentObj));
+                }
             });
+            delay += 2500;
+        });
+    }
+
+    revealPhoto(lastText) {
+        // मुटु र टेक्स्ट लुकाउने
+        this.tweens.add({ targets: [this.heart, lastText], alpha: 0, duration: 1000 });
+
+        const cx = this.scale.width / 2;
+        const cy = this.scale.height / 2;
+        const size = Math.min(this.scale.width, this.scale.height) * 0.6;
+
+        // फोटो कन्टेनर
+        const container = this.add.container(cx, cy).setAlpha(0).setScale(0.5);
+
+        // सेतो बोर्डर
+        const bg = this.add.rectangle(0, 0, size + 20, size + 60, 0xffffff);
+        
+        // फोटो (यदि लोड भएन भने कालो बक्स आउँछ)
+        let img;
+        if(this.textures.exists('userPhoto')) {
+            img = this.add.image(0, -20, 'userPhoto').setDisplaySize(size, size);
+        } else {
+            // फोटो लोड नभएमा यो देखिन्छ
+            img = this.add.rectangle(0, -20, size, size, 0x333333);
+            const errText = this.add.text(0, -20, "Photo Loading...", { color:'#fff' }).setOrigin(0.5);
+            container.add(errText);
         }
+
+        const caption = this.add.text(0, size/2 + 15, "Forever & Always", {
+            fontSize: '24px', color: '#000', fontStyle: 'bold'
+        }).setOrigin(0.5);
+
+        container.add([bg, img, caption]);
+
+        // सेतो फ्ल्यास (Flash Effect)
+        const flash = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0xffffff).setOrigin(0).setAlpha(0);
+        
+        this.tweens.add({
+            targets: flash, alpha: 1, duration: 200, yoyo: true,
+            onComplete: () => {
+                this.tweens.add({
+                    targets: container,
+                    alpha: 1, scale: 1, rotation: 0.05,
+                    duration: 1500, ease: 'Power2.Out'
+                });
+            }
+        });
     }
 }
-
-const config = {
-    type: Phaser.AUTO,
-    scale: {
-        mode: Phaser.Scale.RESIZE,
-        parent: document.body,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: window.innerWidth,
-        height: window.innerHeight
-    },
-    backgroundColor: '#f8f9fa',
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 },
-            debug: false
-        }
-    },
-    scene: MainScene
-};
-
-const game = new Phaser.Game(config);
-
-// Handle window resize dynamically
-window.addEventListener('resize', () => {
-    game.scale.resize(window.innerWidth, window.innerHeight);
-});
-
 </script>
-
 </body>
 </html>
