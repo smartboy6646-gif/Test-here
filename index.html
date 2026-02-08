@@ -158,38 +158,31 @@ class MainScene extends Phaser.Scene {
         let delay = 0;
         let currentObj = null;
 
-        messages.forEach((msg, i) => {
-            this.time.delayedCall(delay, () => {
-                if(currentObj) {
-                    this.tweens.add({ targets: currentObj, alpha: 0, y: currentObj.y - 30, duration: 500 });
-                }
+        messages.forEach((m, i) => {
+    this.time.delayedCall(delay, () => {
+        if(txt) this.tweens.add({ targets: txt, alpha: 0, y: txt.y - 40, duration: 600 });
 
-                const fontSize = Math.min(50, this.scale.width / msg.length * 1.5);
-                
-                currentObj = this.add.text(this.scale.width/2, this.scale.height/2 + 80, msg, {
-                    fontFamily: 'sans-serif',
-                    fontSize: fontSize + 'px',
-                    color: '#fff',
-                    stroke: '#ff0066',
-                    strokeThickness: 2,
-                    shadow: { blur: 10, color: '#ff0066', fill: true }
-                }).setOrigin(0.5).setAlpha(0).setY(this.scale.height/2 + 120);
+        // साइज यहाँ परिवर्तन गर्नुहोस्
+        const size = Math.min(45, (this.scale.width - 20) / m.length * 2.2); 
 
-                this.tweens.add({
-                    targets: currentObj,
-                    y: this.scale.height/2 + 80,
-                    alpha: 1,
-                    duration: 800
-                });
+        txt = this.add.text(this.scale.width/2, this.scale.height/2 + 100, m, {
+            fontSize: size + 'px', 
+            fill: '#fff', 
+            align: 'center', 
+            fontStyle: 'bold', // अझ गाढा देखाउन बोल्ड थपिएको
+            wordWrap: { width: this.scale.width - 40 },
+            stroke: '#ff4d6d', 
+            strokeThickness: 3, // बोर्डर अलि मोटो बनाइएको
+            shadow: { blur: 15, color: '#ff4d6d', fill: true }
+        }).setOrigin(0.5).setAlpha(0);
 
-                // अन्तिममा फोटो देखाउने
-                if(i === messages.length - 1) {
-                    this.time.delayedCall(3000, () => this.revealPhoto(currentObj));
-                }
-            });
-            delay += 2500;
-        });
-    }
+        this.tweens.add({ targets: txt, alpha: 1, y: this.scale.height/2 + 80, duration: 800 });
+
+        if(i === messages.length - 1) this.time.delayedCall(3500, () => this.finalReveal(txt));
+    });
+    delay += 3000;
+});
+
 
     revealPhoto(lastText) {
         // मुटु र टेक्स्ट लुकाउने
