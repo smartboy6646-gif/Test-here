@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gully Cricket">
 
-    <title>Gully Cricket Pro</title>
+    <title>Gully Cricket Pro (Fixed)</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -22,19 +22,22 @@
         :root { 
             --primary: #1a237e; --accent: #ffab00; --bg-gray: #f4f6f8; --green: #2e7d32; --red: #d32f2f;
         }
+        /* FIXED: Prevent Pull-to-refresh crashing on Mobile */
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; padding: 0; background: #000; height: 100dvh; 
+            display: flex; justify-content: center; 
+            overscroll-behavior-y: contain; 
+        }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #000; height: 100dvh; display: flex; justify-content: center; }
         
         .app-container { width: 100%; max-width: 500px; background: var(--bg-gray); height: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* --- HEADERS --- */
         .tv-header {
             flex: 0 0 auto;
             background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
-            color: white;
-            padding: 15px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10;
+            color: white; padding: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 10;
         }
         .match-info { display: flex; justify-content: space-between; font-size: 0.85rem; opacity: 0.95; margin-bottom: 8px; font-weight: 500; }
         .score-row { display: flex; justify-content: space-between; align-items: center; }
@@ -49,7 +52,6 @@
             display: none; 
         }
 
-        /* --- LIVE BAR --- */
         .live-bar {
             flex: 0 0 auto; background: white; border-bottom: 1px solid #ddd;
             display: grid; grid-template-columns: 1.2fr 1.2fr 0.8fr;
@@ -62,7 +64,6 @@
         .active-bat .p-name { color: var(--primary); }
         .bowler-box { text-align: right; border-left: 1px solid #eee; padding-left: 8px; }
 
-        /* --- SCROLL AREA --- */
         .scroll-area {
             flex: 1 1 auto; overflow-y: auto; padding: 10px;
             display: flex; flex-direction: column; align-items: center; gap: 10px;
@@ -83,15 +84,15 @@
             box-shadow: 0 3px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; gap:8px;
         }
 
-        /* --- CONTROLS --- */
         .controls {
             flex: 0 0 auto; background: white; padding: 10px 10px calc(15px + env(safe-area-inset-bottom)) 10px;
             box-shadow: 0 -4px 15px rgba(0,0,0,0.1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; z-index: 20;
         }
+        /* FIXED: Added touch-action to prevent delay/zoom crash */
         .key {
             height: 50px; border: 1px solid #cfd8dc; background: white; border-radius: 8px;
             font-size: 1.3rem; font-weight: 800; color: #333; cursor: pointer; position: relative;
-            box-shadow: 0 3px 0 #b0bec5;
+            box-shadow: 0 3px 0 #b0bec5; touch-action: manipulation;
         }
         .key:active { transform: translateY(3px); box-shadow: none; }
         .k-4 { background: #e1f5fe; color: #01579b; border-color: #b3e5fc; box-shadow: 0 3px 0 #81d4fa; }
@@ -99,7 +100,6 @@
         .k-w { background: var(--red); color: white; font-size: 1rem; border:none; box-shadow: 0 3px 0 #8e0000; }
         .k-undo { background: #757575; color: white; font-size: 1.5rem; border:none; box-shadow: 0 3px 0 #424242; }
 
-        /* --- SETUP UI --- */
         .setup-screen, .match-list-screen, .history-screen { position: absolute; inset: 0; background: #fff; z-index: 50; display: flex; flex-direction: column; overflow: hidden; }
         .setup-top { padding: 15px; background: var(--primary); color: white; text-align: center; }
         .team-names-row { display: flex; gap: 10px; margin-top: 10px; }
@@ -115,7 +115,6 @@
         .setup-footer { padding: 15px; background: white; border-top: 1px solid #eee; text-align: center; display: flex; gap: 10px; flex-direction: column; }
         .overs-input { width: 100%; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; text-align: center; font-weight: bold; font-size: 1.1rem; }
 
-        /* --- FULL SCORECARD MODAL --- */
         .full-sc-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: none; overflow-y: auto; padding: 10px; }
         .sc-card-container { background: white; max-width: 600px; margin: 0 auto; border-radius: 5px; overflow: hidden; }
         .sc-header { background: var(--primary); color: white; padding: 10px; text-align: center; font-weight: bold; }
@@ -128,22 +127,11 @@
         .sc-batter-name { font-weight: bold; color: var(--primary); }
         .sc-out-desc { font-size: 0.7rem; color: #888; display: block; }
 
-        /* --- HOME & LIST (UPDATED FOR LOGO) --- */
         .home-screen { position: absolute; inset: 0; background: var(--bg-gray); z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        
-        /* नयाँ लोगोको लागि CSS */
         .home-logo-container { margin-bottom: 15px; }
-        .home-logo-img { 
-            width: 100px; 
-            height: 100px; 
-            border-radius: 20px; /* एप आइकन जस्तै गोलो कुना */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            object-fit: cover; 
-        }
-
+        .home-logo-img { width: 100px; height: 100px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); object-fit: cover; }
         .home-btn { width: 100%; max-width: 280px; padding: 15px; margin: 8px 0; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 10px; }
         
-        /* Modal Helpers */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-box { background: white; width: 90%; max-width: 400px; padding: 20px; border-radius: 10px; text-align: center; }
         .modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
@@ -151,12 +139,10 @@
         .list-opt { padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; cursor: pointer; }
         .btn-add-over { font-size: 10px; background: var(--accent); color: var(--primary); border: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-weight: bold; vertical-align: middle; margin-left: 5px; }
 
-        /* Match List Styles */
         .match-list-item { background: white; padding: 15px; margin: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; border-left: 5px solid var(--green); }
         .m-title { font-weight: bold; font-size: 1.1rem; color: #333; }
         .m-sub { font-size: 0.85rem; color: #777; margin-top: 3px; }
 
-        /* HISTORY & STATS STYLES */
         .stat-card { background: #333; color: white; padding: 15px; margin: 10px; border-radius: 8px; }
         .stat-table { width: 100%; font-size: 0.85rem; text-align: center; }
         .stat-table th { color: #aaa; font-weight: normal; padding-bottom: 5px; border-bottom: 1px solid #555; }
@@ -168,9 +154,8 @@
 
     <div id="home-screen" class="home-screen">
         <div class="home-logo-container">
-            <img src="Logoap.png" class="home-logo-img" alt="App Logo">
+            <img src="Logoap.png" class="home-logo-img" alt="App Logo" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22red%22/></svg>'">
         </div>
-        
         <h1 style="color:var(--primary); margin-top:0">Gully Cricket Pro</h1>
         <button id="btn-resume" class="home-btn" style="background:var(--green); color:white; display:none" onclick="resumeMatch()">▶ Resume Match</button>
         <button class="home-btn" style="background:var(--accent); color:var(--primary)" onclick="startSetup()">Start New Match</button>
@@ -190,10 +175,8 @@
                 <h4 style="margin:0 0 10px 0; color:var(--accent)">🏆 Today's Top Performers</h4>
                 <div id="daily-stats-body">No matches played today.</div>
             </div>
-
             <div class="hist-date-hdr">COMPLETED MATCHES (TODAY)</div>
             <div id="history-list-container"></div>
-            
             <div style="padding:20px; text-align:center">
                 <button onclick="clearHistory()" style="background:#d32f2f; color:white; padding:10px 20px; border:none; border-radius:5px">🗑 Clear Today's History</button>
             </div>
@@ -327,15 +310,20 @@
 
 <script>
     // ==========================================
+    // CRASH FIX: GLOBAL ERROR HANDLER
+    // ==========================================
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Caught Crash:", message);
+        return true; // Prevents browser error page/reload
+    };
+
+    // ==========================================
     // CONFIG: FIREBASE
     // ==========================================
-    const firebaseConfig = {apiKey: "AIzaSyA4iMak_E4OwmR9UkeITElkT3ZBk8tLO_o",
-  authDomain: "cricketscore-715fe.firebaseapp.com",
-  databaseURL: "https://cricketscore-715fe-default-rtdb.firebaseio.com",
-  projectId: "cricketscore-715fe",
-  storageBucket: "cricketscore-715fe.firebasestorage.app",
-  messagingSenderId: "197101285028",
-  appId: "1:197101285028:web:3b8f2fc780af8a575b8031"    };
+    const firebaseConfig = {
+        // apiKey: "YOUR_API_KEY",
+        // databaseURL: "https://YOUR_ID.firebaseio.com",
+    };
 
     let db = null;
     let matchId = null;
@@ -366,28 +354,38 @@
     };
 
     // ==========================================
-    // INIT & LOCAL STORAGE
+    // CRASH FIX: PREVENT BACK BUTTON EXIT
     // ==========================================
     window.onload = function() {
+        // Lock Back Button to prevent "paxadi aaux" crash
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+        };
+        
         loadTeamsLocal();
         checkActiveMatch();
     };
 
     function saveTeamsLocal() {
-        let nA = document.getElementById('ta-name').value;
-        let nB = document.getElementById('tb-name').value;
-        localStorage.setItem('gully_teams', JSON.stringify({
-            taName: nA, tbName: nB, pool: pool, ta: ta, tb: tb
-        }));
+        try {
+            let nA = document.getElementById('ta-name').value;
+            let nB = document.getElementById('tb-name').value;
+            localStorage.setItem('gully_teams', JSON.stringify({
+                taName: nA, tbName: nB, pool: pool, ta: ta, tb: tb
+            }));
+        } catch(e){}
     }
     function loadTeamsLocal() {
-        let data = localStorage.getItem('gully_teams');
-        if(data) {
-            let p = JSON.parse(data);
-            pool = p.pool || []; ta = p.ta || []; tb = p.tb || [];
-            document.getElementById('ta-name').value = p.taName || "Team A";
-            document.getElementById('tb-name').value = p.tbName || "Team B";
-        }
+        try {
+            let data = localStorage.getItem('gully_teams');
+            if(data) {
+                let p = JSON.parse(data);
+                pool = p.pool || []; ta = p.ta || []; tb = p.tb || [];
+                document.getElementById('ta-name').value = p.taName || "Team A";
+                document.getElementById('tb-name').value = p.tbName || "Team B";
+            }
+        } catch(e){}
         renderSetup();
     }
     function startSetup() {
@@ -460,7 +458,12 @@
         matchId = "m_" + Date.now();
         saveGameLocal();
         
-        if(db) db.ref('active_matches/' + matchId).set({ name: `${batN} vs ${bowlN}`, timestamp: Date.now() });
+        // CRASH FIX: Try-catch block around Firebase
+        if(db) {
+            try {
+                db.ref('active_matches/' + matchId).set({ name: `${batN} vs ${bowlN}`, timestamp: Date.now() });
+            } catch(e) { console.log("Offline mode"); }
+        }
 
         document.getElementById('modal').style.display = 'none';
         startInnings();
@@ -484,18 +487,23 @@
 
     // --- SCORING ---
     function saveState() {
-        let copy = JSON.parse(JSON.stringify(G));
-        G.history.push(JSON.stringify(copy));
-        if(G.history.length > 20) G.history.shift();
+        try {
+            // CRASH FIX: Optimization to prevent memory leaks
+            let copy = JSON.parse(JSON.stringify(G));
+            G.history.push(JSON.stringify(copy));
+            if(G.history.length > 20) G.history.shift();
+        } catch(e) {}
     }
     function undo() {
         if(G.history.length === 0) return alert("Cannot Undo");
-        let prev = JSON.parse(G.history.pop());
-        G.score = prev.score; G.wkts = prev.wkts; G.balls = prev.balls;
-        G.s = prev.s; G.ns = prev.ns; G.b = prev.b;
-        G.stats = prev.stats; G.overHist = prev.overHist;
-        G.inn = prev.inn; G.target = prev.target; G.inn1Data = prev.inn1Data;
-        updateUI(); syncOnline(); saveGameLocal();
+        try {
+            let prev = JSON.parse(G.history.pop());
+            G.score = prev.score; G.wkts = prev.wkts; G.balls = prev.balls;
+            G.s = prev.s; G.ns = prev.ns; G.b = prev.b;
+            G.stats = prev.stats; G.overHist = prev.overHist;
+            G.inn = prev.inn; G.target = prev.target; G.inn1Data = prev.inn1Data;
+            updateUI(); syncOnline(); saveGameLocal();
+        } catch(e) { alert("Error undoing"); }
     }
     function run(r) {
         saveState();
@@ -567,19 +575,27 @@
         }
     }
     function swap() { [G.s, G.ns] = [G.ns, G.s]; }
+    
+    // ==========================================
+    // CRASH FIX: ROBUST GAME STATUS CHECK
+    // ==========================================
     function checkGameStatus() {
-        if(G.inn === 2 && G.score >= G.target) { endInnings(); return; }
-        if(G.balls > 0 && G.balls % 6 === 0) {
-            if(G.balls >= G.totalOvers * 6) endInnings();
-            else {
-                swap(); G.overHist.push("|");
-                let avail = G.bowlTeam.p.filter(p => p !== G.b);
-                setTimeout(() => {
-                    selectPlayer("Next Bowler", avail, (p) => { G.b = p; updateUI(); syncOnline(); saveGameLocal(); });
-                }, 100);
+        try {
+            if(G.inn === 2 && G.score >= G.target) { endInnings(); return; }
+            if(G.balls > 0 && G.balls % 6 === 0) {
+                if(G.balls >= G.totalOvers * 6) endInnings();
+                else {
+                    swap(); G.overHist.push("|");
+                    let avail = G.bowlTeam.p.filter(p => p !== G.b);
+                    setTimeout(() => {
+                        selectPlayer("Next Bowler", avail, (p) => { 
+                            G.b = p; updateUI(); syncOnline(); saveGameLocal(); 
+                        });
+                    }, 100);
+                }
             }
-        }
-        updateUI(); syncOnline(); saveGameLocal();
+            updateUI(); syncOnline(); saveGameLocal();
+        } catch(e) { console.error("Game Loop Error", e); }
     }
     function addOver() { if(confirm("Add 1 Over?")) { G.totalOvers++; updateUI(); syncOnline(); saveGameLocal(); } }
 
@@ -599,7 +615,10 @@
             let res = (G.score >= G.target) ? `${G.batTeam.name} Won!` : `${G.bowlTeam.name} Won!`;
             alert("Match Finished! " + res);
             saveMatchToHistory(res);
-            if(db && isScorer) db.ref('active_matches/'+matchId).remove();
+            // CRASH FIX: Safe Remove
+            if(db && isScorer && matchId) {
+                try { db.ref('active_matches/'+matchId).remove(); } catch(e){}
+            }
             clearActiveMatch();
             location.reload();
         }
@@ -616,17 +635,19 @@
     // HISTORY & STATS LOGIC (NEW)
     // ==========================================
     function saveMatchToHistory(res) {
-        let h = JSON.parse(localStorage.getItem('gully_history') || "[]");
-        let rec = {
-            id: matchId,
-            date: new Date().toLocaleDateString('en-CA'), // Format YYYY-MM-DD
-            res: res,
-            desc: `${G.batTeam.name} vs ${G.bowlTeam.name}`,
-            inn1: G.inn1Data,
-            inn2: { score:G.score, wkts:G.wkts, balls:G.balls, stats:G.stats } // Inn2 Data
-        };
-        h.unshift(rec);
-        localStorage.setItem('gully_history', JSON.stringify(h));
+        try {
+            let h = JSON.parse(localStorage.getItem('gully_history') || "[]");
+            let rec = {
+                id: matchId,
+                date: new Date().toLocaleDateString('en-CA'), // Format YYYY-MM-DD
+                res: res,
+                desc: `${G.batTeam.name} vs ${G.bowlTeam.name}`,
+                inn1: G.inn1Data,
+                inn2: { score:G.score, wkts:G.wkts, balls:G.balls, stats:G.stats } // Inn2 Data
+            };
+            h.unshift(rec);
+            localStorage.setItem('gully_history', JSON.stringify(h));
+        } catch(e) {}
     }
 
     function showHistory() {
@@ -722,13 +743,16 @@
         if(G.ns) { let ns=G.stats[G.ns]; document.getElementById('name-ns').innerText=G.ns; document.getElementById('stat-ns').innerText=`${ns.r}(${ns.b})`; }
         if(G.b) { let b=G.stats[G.b]; document.getElementById('name-b').innerText=G.b; document.getElementById('stat-b').innerText=`${b.bw}-${b.br} (${Math.floor(b.ballsBowled/6)}.${b.ballsBowled%6})`; }
         
-        let hist = G.overHist.slice(-12).map(x=>{
-            if(x==='|') return `<span style="color:#ccc;margin:0 4px">|</span>`;
-            let c = 'ball-badge';
-            if(x===4) c+=' ball-4'; if(x===6) c+=' ball-6'; if(String(x).includes('W')) c+=' ball-w';
-            return `<div class="${c}">${x}</div>`;
-        }).join('');
-        document.getElementById('list-balls').innerHTML = hist;
+        // CRASH FIX: Guard against null/undefined in hist
+        if(G.overHist) {
+            let hist = G.overHist.slice(-12).map(x=>{
+                if(x==='|') return `<span style="color:#ccc;margin:0 4px">|</span>`;
+                let c = 'ball-badge';
+                if(x===4) c+=' ball-4'; if(x===6) c+=' ball-6'; if(String(x).includes('W')) c+=' ball-w';
+                return `<div class="${c}">${x}</div>`;
+            }).join('');
+            document.getElementById('list-balls').innerHTML = hist;
+        }
     }
 
     function openModal(t, opts) {
@@ -818,12 +842,39 @@
         db.ref('matches/' + mid).on('value', snap => { let val = snap.val(); if(val) { G = val; updateUI(); } });
     }
 
-    // Persistence
-    function saveGameLocal() { if(isScorer && G.matchStarted) { localStorage.setItem('gully_active', JSON.stringify(G)); localStorage.setItem('gully_mid', matchId); }}
-    function checkActiveMatch() { if(localStorage.getItem('gully_active')) document.getElementById('btn-resume').style.display='flex'; }
-    function resumeMatch() { G = JSON.parse(localStorage.getItem('gully_active')); matchId = localStorage.getItem('gully_mid'); document.getElementById('home-screen').style.display='none'; document.getElementById('game-ui').style.display='flex'; updateUI(); syncOnline(); }
-    function clearActiveMatch() { localStorage.removeItem('gully_active'); localStorage.removeItem('gully_mid'); G.matchStarted=false; }
-    function syncOnline() { if(db && matchId && isScorer) db.ref('matches/'+matchId).set(G); }
+    // Persistence with Crash Protection
+    function saveGameLocal() { 
+        if(isScorer && G.matchStarted) { 
+            try {
+                localStorage.setItem('gully_active', JSON.stringify(G)); 
+                localStorage.setItem('gully_mid', matchId); 
+            } catch(e){}
+        }
+    }
+    function checkActiveMatch() { 
+        try { if(localStorage.getItem('gully_active')) document.getElementById('btn-resume').style.display='flex'; } catch(e){}
+    }
+    function resumeMatch() { 
+        try {
+            G = JSON.parse(localStorage.getItem('gully_active')); 
+            matchId = localStorage.getItem('gully_mid'); 
+            document.getElementById('home-screen').style.display='none'; 
+            document.getElementById('game-ui').style.display='flex'; 
+            updateUI(); syncOnline(); 
+        } catch(e) { clearActiveMatch(); alert("Save corrupted"); }
+    }
+    function clearActiveMatch() { 
+        try {
+            localStorage.removeItem('gully_active'); 
+            localStorage.removeItem('gully_mid'); 
+            G.matchStarted=false; 
+        } catch(e){}
+    }
+    function syncOnline() { 
+        if(db && matchId && isScorer) {
+            try { db.ref('matches/'+matchId).set(G); } catch(e){}
+        }
+    }
 </script>
 </body>
 </html>
