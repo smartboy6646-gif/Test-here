@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gully Cricket">
 
-    <title>Gully Cricket Pro (Fixed)</title>
+    <title>Gully Cricket Pro (Stable)</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -22,7 +22,6 @@
         :root { 
             --primary: #1a237e; --accent: #ffab00; --bg-gray: #f4f6f8; --green: #2e7d32; --red: #d32f2f;
         }
-        /* FIXED: Prevent Pull-to-refresh crashing on Mobile */
         body { 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; padding: 0; background: #000; height: 100dvh; 
@@ -88,7 +87,6 @@
             flex: 0 0 auto; background: white; padding: 10px 10px calc(15px + env(safe-area-inset-bottom)) 10px;
             box-shadow: 0 -4px 15px rgba(0,0,0,0.1); display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; z-index: 20;
         }
-        /* FIXED: Added touch-action to prevent delay/zoom crash */
         .key {
             height: 50px; border: 1px solid #cfd8dc; background: white; border-radius: 8px;
             font-size: 1.3rem; font-weight: 800; color: #333; cursor: pointer; position: relative;
@@ -314,12 +312,9 @@
     // ==========================================
     window.onerror = function(message, source, lineno, colno, error) {
         console.error("Caught Crash:", message);
-        return true; // Prevents browser error page/reload
+        return true; 
     };
 
-    // ==========================================
-    // CONFIG: FIREBASE
-    // ==========================================
     const firebaseConfig = {
         // apiKey: "YOUR_API_KEY",
         // databaseURL: "https://YOUR_ID.firebaseio.com",
@@ -336,9 +331,6 @@
         } catch(e) { console.error("Firebase Init Error", e); }
     }
 
-    // ==========================================
-    // GLOBAL STATE
-    // ==========================================
     let pool = [], ta = [], tb = [];
     
     let G = {
@@ -353,16 +345,11 @@
         inn1Data: null 
     };
 
-    // ==========================================
-    // CRASH FIX: PREVENT BACK BUTTON EXIT
-    // ==========================================
     window.onload = function() {
-        // Lock Back Button to prevent "paxadi aaux" crash
         history.pushState(null, null, location.href);
         window.onpopstate = function () {
             history.go(1);
         };
-        
         loadTeamsLocal();
         checkActiveMatch();
     };
@@ -458,7 +445,6 @@
         matchId = "m_" + Date.now();
         saveGameLocal();
         
-        // CRASH FIX: Try-catch block around Firebase
         if(db) {
             try {
                 db.ref('active_matches/' + matchId).set({ name: `${batN} vs ${bowlN}`, timestamp: Date.now() });
@@ -485,26 +471,37 @@
         });
     }
 
-    // --- SCORING ---
+    // ==========================================
+    // CRASH FIX: FIXED SAVE STATE RECURSION
+    // ==========================================
     function saveState() {
         try {
-            // CRASH FIX: Optimization to prevent memory leaks
-            let copy = JSON.parse(JSON.stringify(G));
-            G.history.push(JSON.stringify(copy));
+            // FIX: Remove 'history' from the object before saving it to history
+            // This prevents the object from growing infinitely (Recursion/Memory Leak)
+            let stateToSave = { ...G };
+            delete stateToSave.history; 
+            
+            G.history.push(JSON.stringify(stateToSave));
             if(G.history.length > 20) G.history.shift();
-        } catch(e) {}
+        } catch(e) { console.error("Save Error", e); }
     }
+
     function undo() {
         if(G.history.length === 0) return alert("Cannot Undo");
         try {
-            let prev = JSON.parse(G.history.pop());
+            let stateStr = G.history.pop();
+            let prev = JSON.parse(stateStr);
+            
+            // Restore properties individually to preserve current history stack
             G.score = prev.score; G.wkts = prev.wkts; G.balls = prev.balls;
             G.s = prev.s; G.ns = prev.ns; G.b = prev.b;
             G.stats = prev.stats; G.overHist = prev.overHist;
             G.inn = prev.inn; G.target = prev.target; G.inn1Data = prev.inn1Data;
+            
             updateUI(); syncOnline(); saveGameLocal();
-        } catch(e) { alert("Error undoing"); }
+        } catch(e) { alert("Error undoing"); console.error(e); }
     }
+
     function run(r) {
         saveState();
         G.score += r; G.balls++;
@@ -576,9 +573,6 @@
     }
     function swap() { [G.s, G.ns] = [G.ns, G.s]; }
     
-    // ==========================================
-    // CRASH FIX: ROBUST GAME STATUS CHECK
-    // ==========================================
     function checkGameStatus() {
         try {
             if(G.inn === 2 && G.score >= G.target) { endInnings(); return; }
@@ -615,7 +609,6 @@
             let res = (G.score >= G.target) ? `${G.batTeam.name} Won!` : `${G.bowlTeam.name} Won!`;
             alert("Match Finished! " + res);
             saveMatchToHistory(res);
-            // CRASH FIX: Safe Remove
             if(db && isScorer && matchId) {
                 try { db.ref('active_matches/'+matchId).remove(); } catch(e){}
             }
@@ -632,18 +625,18 @@
     }
 
     // ==========================================
-    // HISTORY & STATS LOGIC (NEW)
+    // HISTORY & STATS LOGIC
     // ==========================================
     function saveMatchToHistory(res) {
         try {
             let h = JSON.parse(localStorage.getItem('gully_history') || "[]");
             let rec = {
                 id: matchId,
-                date: new Date().toLocaleDateString('en-CA'), // Format YYYY-MM-DD
+                date: new Date().toLocaleDateString('en-CA'),
                 res: res,
                 desc: `${G.batTeam.name} vs ${G.bowlTeam.name}`,
                 inn1: G.inn1Data,
-                inn2: { score:G.score, wkts:G.wkts, balls:G.balls, stats:G.stats } // Inn2 Data
+                inn2: { score:G.score, wkts:G.wkts, balls:G.balls, stats:G.stats }
             };
             h.unshift(rec);
             localStorage.setItem('gully_history', JSON.stringify(h));
@@ -657,10 +650,8 @@
         let h = JSON.parse(localStorage.getItem('gully_history') || "[]");
         let todayStr = new Date().toLocaleDateString('en-CA');
         
-        // Filter Today's Matches
         let todayMatches = h.filter(m => m.date === todayStr);
 
-        // 1. Render Match List
         let listDiv = document.getElementById('history-list-container');
         if(todayMatches.length === 0) {
             listDiv.innerHTML = "<div style='text-align:center; padding:20px; color:#999'>No completed matches today.</div>";
@@ -673,10 +664,8 @@
                 </div>
             `).join('');
 
-            // 2. Aggregate Stats
             let playerStats = {};
             todayMatches.forEach(m => {
-                // Combine stats from Inn 1 and Inn 2
                 let allStats = [];
                 if(m.inn1 && m.inn1.stats) allStats.push(m.inn1.stats);
                 if(m.inn2 && m.inn2.stats) allStats.push(m.inn2.stats);
@@ -690,7 +679,6 @@
                 });
             });
 
-            // Sort by Runs
             let sortedPlayers = Object.keys(playerStats).sort((a,b) => playerStats[b].r - playerStats[a].r);
             
             let tbl = `
@@ -707,10 +695,9 @@
         if(confirm("Delete Today's History?")) {
             let h = JSON.parse(localStorage.getItem('gully_history') || "[]");
             let todayStr = new Date().toLocaleDateString('en-CA');
-            // Keep only non-today matches
             let kept = h.filter(m => m.date !== todayStr);
             localStorage.setItem('gully_history', JSON.stringify(kept));
-            showHistory(); // Refresh
+            showHistory();
         }
     }
 
@@ -743,7 +730,6 @@
         if(G.ns) { let ns=G.stats[G.ns]; document.getElementById('name-ns').innerText=G.ns; document.getElementById('stat-ns').innerText=`${ns.r}(${ns.b})`; }
         if(G.b) { let b=G.stats[G.b]; document.getElementById('name-b').innerText=G.b; document.getElementById('stat-b').innerText=`${b.bw}-${b.br} (${Math.floor(b.ballsBowled/6)}.${b.ballsBowled%6})`; }
         
-        // CRASH FIX: Guard against null/undefined in hist
         if(G.overHist) {
             let hist = G.overHist.slice(-12).map(x=>{
                 if(x==='|') return `<span style="color:#ccc;margin:0 4px">|</span>`;
@@ -846,7 +832,10 @@
     function saveGameLocal() { 
         if(isScorer && G.matchStarted) { 
             try {
-                localStorage.setItem('gully_active', JSON.stringify(G)); 
+                // IMPORTANT: Don't save recursive history to LocalStorage either
+                let stateToSave = { ...G };
+                delete stateToSave.history;
+                localStorage.setItem('gully_active', JSON.stringify(stateToSave)); 
                 localStorage.setItem('gully_mid', matchId); 
             } catch(e){}
         }
@@ -857,6 +846,8 @@
     function resumeMatch() { 
         try {
             G = JSON.parse(localStorage.getItem('gully_active')); 
+            // Re-initialize history as empty array on resume to prevent old history from crashing
+            G.history = [];
             matchId = localStorage.getItem('gully_mid'); 
             document.getElementById('home-screen').style.display='none'; 
             document.getElementById('game-ui').style.display='flex'; 
@@ -872,7 +863,11 @@
     }
     function syncOnline() { 
         if(db && matchId && isScorer) {
-            try { db.ref('matches/'+matchId).set(G); } catch(e){}
+            try { 
+                let stateToSync = { ...G };
+                delete stateToSync.history; // Don't sync history to Firebase
+                db.ref('matches/'+matchId).set(stateToSync); 
+            } catch(e){}
         }
     }
 </script>
